@@ -50,11 +50,6 @@ Typical use cases include:
 - applying and composing rigid transforms
 - working with coordinate frames in engineering or sensor-based applications
 
-## Installation
-
-```bash
-go get github.com/motah-fard/geom3d
-
 ## Non-goals
 
 geom3d is not:
@@ -63,4 +58,11 @@ geom3d is not:
 - a physics engine
 - a mesh loader
 - a CAD kernel
+
+## Installation
+
+```bash
+go get github.com/motah-fard/geom3d
+
+
 
