@@ -1,5 +1,9 @@
 # geom3d
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/motah-fard/geom3d.svg)](https://pkg.go.dev/github.com/motah-fard/geom3d)
+[![Go Report Card](https://goreportcard.com/badge/github.com/motah-fard/geom3d)](https://goreportcard.com/report/github.com/motah-fard/geom3d)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 `geom3d` is a practical Go library for 3D geometry and spatial calculations.
 
 It provides a focused set of tools for working with 3D vectors, geometric primitives, projections, distances, intersections, and rigid transforms in Go. The package is designed for engineering, simulation, robotics-adjacent, biomechanics, and spatial analytics workflows.
