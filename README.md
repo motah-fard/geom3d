@@ -64,5 +64,3 @@ geom3d is not:
 ```bash
 go get github.com/motah-fard/geom3d
 
-
-
