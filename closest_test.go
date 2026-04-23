@@ -1,6 +1,9 @@
 package geom3d
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestClosestPointOnSegmentMiddle(t *testing.T) {
 	s := Segment3{
@@ -60,4 +63,23 @@ func TestClosestPointOnSegmentDegenerate(t *testing.T) {
 	if got != want {
 		t.Fatalf("ClosestPointOnSegment degenerate: got %#v, want %#v", got, want)
 	}
+}
+func ExampleClosestPointOnSegment() {
+	seg := Segment3{
+		A: Vec3{X: 0, Y: 0, Z: 0},
+		B: Vec3{X: 4, Y: 0, Z: 0},
+	}
+
+	p1 := Vec3{X: 2, Y: 3, Z: 0}
+	p2 := Vec3{X: -1, Y: 1, Z: 0}
+	p3 := Vec3{X: 6, Y: -2, Z: 0}
+
+	fmt.Println(ClosestPointOnSegment(p1, seg))
+	fmt.Println(ClosestPointOnSegment(p2, seg))
+	fmt.Println(ClosestPointOnSegment(p3, seg))
+
+	// Output:
+	// {2 0 0}
+	// {0 0 0}
+	// {4 0 0}
 }

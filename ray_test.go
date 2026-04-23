@@ -1,6 +1,9 @@
 package geom3d
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestRay3PointAt(t *testing.T) {
 	r := Ray3{
@@ -26,4 +29,23 @@ func TestRay3IsValid(t *testing.T) {
 	if zero.IsValid() {
 		t.Fatal("expected zero-direction ray to be invalid")
 	}
+}
+func ExampleRay3_PointAt() {
+	r := Ray3{
+		Origin: Vec3{X: 1, Y: 2, Z: 3},
+		Dir:    Vec3{X: 2, Y: 0, Z: -1},
+	}
+
+	fmt.Println(r.PointAt(2))
+
+	// Output:
+	// {5 2 1}
+}
+func ExampleRay3_IsValid() {
+	fmt.Println(Ray3{Dir: Vec3{X: 1, Y: 0, Z: 0}}.IsValid())
+	fmt.Println(Ray3{}.IsValid())
+
+	// Output:
+	// true
+	// false
 }

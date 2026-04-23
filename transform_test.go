@@ -1,6 +1,7 @@
 package geom3d
 
 import (
+	"fmt"
 	"math"
 	"testing"
 )
@@ -80,4 +81,30 @@ func TestTransformInverse(t *testing.T) {
 	if !AlmostEqual(got.X, want.X) || !AlmostEqual(got.Y, want.Y) || !AlmostEqual(got.Z, want.Z) {
 		t.Fatalf("Inverse: got %#v, want %#v", got, want)
 	}
+}
+func TestIdentityTransformApplyVector(t *testing.T) {
+	tf := IdentityTransform()
+	v := Vec3{1, 2, 3}
+
+	got := tf.ApplyVector(v)
+	want := v
+
+	if got != want {
+		t.Fatalf("IdentityTransform ApplyVector: got %#v, want %#v", got, want)
+	}
+}
+
+func ExampleTransform_ApplyPoint() {
+	tf := Transform{
+		R: RotationZ(math.Pi / 2),
+		T: Vec3{X: 10, Y: 0, Z: 0},
+	}
+
+	p := Vec3{X: 1, Y: 0, Z: 0}
+	q := tf.ApplyPoint(p)
+
+	fmt.Printf("%.0f %.0f %.0f\n", q.X, q.Y, q.Z)
+
+	// Output:
+	// 10 1 0
 }

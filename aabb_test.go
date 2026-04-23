@@ -1,6 +1,8 @@
 package geom3d
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestAABBIsValid(t *testing.T) {
 	box := AABB{

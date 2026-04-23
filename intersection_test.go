@@ -1,6 +1,9 @@
 package geom3d
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestIntersectRayPlaneHit(t *testing.T) {
 	r := Ray3{
@@ -166,4 +169,85 @@ func TestIntersectRayAABBParallelOutside(t *testing.T) {
 	if IntersectRayAABB(r, b) {
 		t.Fatal("expected parallel ray outside slab to miss AABB")
 	}
+}
+
+func ExampleIntersectSegmentPlane() {
+	s := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{0, 0, 10},
+	}
+	pl := Plane{
+		Point:  Vec3{0, 0, 5},
+		Normal: Vec3{0, 0, 1},
+	}
+
+	p, ok := IntersectSegmentPlane(s, pl)
+	fmt.Println(ok)
+	fmt.Println(p)
+
+	// Output:
+	// true
+	// {0 0 5}
+}
+func ExampleIntersectRayAABB() {
+	box := AABB{
+		Min: Vec3{X: 0, Y: 0, Z: 0},
+		Max: Vec3{X: 2, Y: 2, Z: 2},
+	}
+
+	ray1 := Ray3{
+		Origin: Vec3{X: -1, Y: 1, Z: 1},
+		Dir:    Vec3{X: 1, Y: 0, Z: 0},
+	}
+
+	ray2 := Ray3{
+		Origin: Vec3{X: -1, Y: 3, Z: 1},
+		Dir:    Vec3{X: 1, Y: 0, Z: 0},
+	}
+
+	fmt.Println(IntersectRayAABB(ray1, box))
+	fmt.Println(IntersectRayAABB(ray2, box))
+
+	// Output:
+	// true
+	// false
+}
+
+func ExampleIntersectRayPlane() {
+	r := Ray3{
+		Origin: Vec3{X: 0, Y: 0, Z: 0},
+		Dir:    Vec3{X: 0, Y: 0, Z: 1},
+	}
+
+	pl := Plane{
+		Point:  Vec3{X: 0, Y: 0, Z: 5},
+		Normal: Vec3{X: 0, Y: 0, Z: 1},
+	}
+
+	p, ok := IntersectRayPlane(r, pl)
+	fmt.Println(ok)
+	fmt.Println(p)
+
+	// Output:
+	// true
+	// {0 0 5}
+}
+func ExampleIntersectRayPlane_parallel() {
+	r := Ray3{
+		Origin: Vec3{X: 0, Y: 0, Z: 0},
+		Dir:    Vec3{X: 1, Y: 0, Z: 0},
+	}
+
+	pl := Plane{
+		Point:  Vec3{X: 0, Y: 0, Z: 5},
+		Normal: Vec3{X: 0, Y: 0, Z: 1},
+	}
+
+	p, ok := IntersectRayPlane(r, pl)
+	fmt.Println(ok)
+	fmt.Println(p)
+
+	// Output:
+	// false
+	// {0 0 0}
 }

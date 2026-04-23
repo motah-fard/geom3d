@@ -20,5 +20,4 @@
 //   - Mesh loading or file formats
 //   - Physics engine features
 //   - General dense linear algebra
-
 package geom3d

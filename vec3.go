@@ -2,7 +2,7 @@ package geom3d
 
 import "math"
 
-// Vec3 represents a 3D vector or point.
+// Vec3 represents a 3D vector or point in Cartesian coordinates.
 type Vec3 struct {
 	X, Y, Z float64
 }

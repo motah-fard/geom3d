@@ -1,8 +1,10 @@
 package geom3d
 
-import "math"
+import (
+	"math"
+)
 
-// Mat3 represents a 3x3 matrix.
+// Mat3 represents a 3×3 matrix used for linear transformations in 3D.
 type Mat3 struct {
 	M [3][3]float64
 }
@@ -60,7 +62,8 @@ func RotationZ(theta float64) Mat3 {
 	}
 }
 
-// MulVec returns the matrix-vector product m * v.
+// MulVec returns the matrix-vector product m * v, applying v first and then m
+// when used with column vectors.
 func (m Mat3) MulVec(v Vec3) Vec3 {
 	return Vec3{
 		X: m.M[0][0]*v.X + m.M[0][1]*v.Y + m.M[0][2]*v.Z,

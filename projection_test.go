@@ -1,6 +1,9 @@
 package geom3d
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestProjectPointToPlane(t *testing.T) {
 	pl := Plane{
@@ -49,4 +52,36 @@ func TestProjectPointToLineDegenerate(t *testing.T) {
 	if got != want {
 		t.Fatalf("ProjectPointToLine degenerate: got %#v, want %#v", got, want)
 	}
+}
+
+func ExampleProjectPointToPlane() {
+	pl := Plane{
+		Point:  Vec3{X: 0, Y: 0, Z: 0},
+		Normal: Vec3{X: 0, Y: 0, Z: 1},
+	}
+
+	p := Vec3{X: 2, Y: 3, Z: 5}
+	fmt.Println(ProjectPointToPlane(p, pl))
+
+	// Output:
+	// {2 3 0}
+}
+func ExampleProjectPointToPlane_invalidPlane() {
+	pl := Plane{}
+	p := Vec3{X: 2, Y: 3, Z: 5}
+
+	fmt.Println(ProjectPointToPlane(p, pl))
+
+	// Output:
+	// {0 0 0}
+}
+func ExampleProjectPointToLine() {
+	a := Vec3{X: 0, Y: 0, Z: 0}
+	b := Vec3{X: 2, Y: 0, Z: 0}
+	p := Vec3{X: 1, Y: 3, Z: 0}
+
+	fmt.Println(ProjectPointToLine(p, a, b))
+
+	// Output:
+	// {1 0 0}
 }

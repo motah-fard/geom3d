@@ -1,6 +1,7 @@
 package geom3d
 
 import (
+	"fmt"
 	"math"
 	"testing"
 )
@@ -78,4 +79,48 @@ func TestMat3Transpose(t *testing.T) {
 	if got != want {
 		t.Fatalf("Transpose: got %#v, want %#v", got, want)
 	}
+}
+func TestMat3TransposeTwice(t *testing.T) {
+	m := Mat3{
+		M: [3][3]float64{
+			{1, 2, 3},
+			{4, 5, 6},
+			{7, 8, 9},
+		},
+	}
+
+	got := m.Transpose().Transpose()
+	if got != m {
+		t.Fatalf("Transpose twice: got %#v, want %#v", got, m)
+	}
+}
+func TestRotationZPreservesNorm(t *testing.T) {
+	m := RotationZ(math.Pi / 3)
+	v := Vec3{3, 4, 0}
+
+	got := m.MulVec(v)
+
+	if !AlmostEqual(got.Norm(), v.Norm()) {
+		t.Fatalf("rotation should preserve norm: got %v, want %v", got.Norm(), v.Norm())
+	}
+}
+func ExampleRotationZ() {
+	m := RotationZ(math.Pi / 2)
+	v := Vec3{X: 1, Y: 0, Z: 0}
+	out := m.MulVec(v)
+
+	fmt.Printf("%.0f %.0f %.0f\n", out.X, out.Y, out.Z)
+
+	// Output:
+	// 0 1 0
+}
+func ExampleIdentityMat3() {
+	m := IdentityMat3()
+	v := Vec3{X: 1, Y: 2, Z: 3}
+	out := m.MulVec(v)
+
+	fmt.Printf("%.0f %.0f %.0f\n", out.X, out.Y, out.Z)
+
+	// Output:
+	// 1 2 3
 }

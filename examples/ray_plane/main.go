@@ -18,6 +18,11 @@ func main() {
 	}
 
 	p, ok := geom3d.IntersectRayPlane(r, pl)
+
+	fmt.Println("ray origin:", r.Origin)
+	fmt.Println("ray direction:", r.Dir)
+	fmt.Println("plane point:", pl.Point)
+	fmt.Println("plane normal:", pl.Normal)
 	fmt.Println("hit:", ok)
-	fmt.Println("point:", p)
+	fmt.Println("intersection point:", p)
 }

@@ -1,6 +1,9 @@
 package geom3d
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestPlaneIsValid(t *testing.T) {
 	p := Plane{Normal: Vec3{0, 0, 1}}
@@ -22,4 +25,15 @@ func TestPlaneUnitNormal(t *testing.T) {
 	if got != want {
 		t.Fatalf("UnitNormal: got %#v, want %#v", got, want)
 	}
+}
+
+func ExamplePlane_UnitNormal() {
+	p := Plane{
+		Normal: Vec3{X: 0, Y: 0, Z: 5},
+	}
+
+	fmt.Println(p.UnitNormal())
+
+	// Output:
+	// {0 0 1}
 }
