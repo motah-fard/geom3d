@@ -127,6 +127,142 @@ func TestClosestPointOnTriangleDegenerate(t *testing.T) {
 		t.Fatalf("degenerate triangle: got %#v, want %#v", got, want)
 	}
 }
+func TestClosestPointsBetweenSegmentsIntersecting(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{1, -1, 0},
+		B: Vec3{1, 1, 0},
+	}
+
+	c1, c2 := ClosestPointsBetweenSegments(s1, s2)
+	want := Vec3{1, 0, 0}
+
+	if c1 != want || c2 != want {
+		t.Fatalf("intersecting segments: got %#v and %#v, want %#v and %#v", c1, c2, want, want)
+	}
+}
+
+func TestClosestPointsBetweenSegmentsSkewSeparated(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{1, 1, 1},
+		B: Vec3{1, 1, -1},
+	}
+
+	c1, c2 := ClosestPointsBetweenSegments(s1, s2)
+	want1 := Vec3{1, 0, 0}
+	want2 := Vec3{1, 1, 0}
+
+	if !AlmostEqual(c1.X, want1.X) || !AlmostEqual(c1.Y, want1.Y) || !AlmostEqual(c1.Z, want1.Z) {
+		t.Fatalf("skew segments c1: got %#v, want %#v", c1, want1)
+	}
+	if !AlmostEqual(c2.X, want2.X) || !AlmostEqual(c2.Y, want2.Y) || !AlmostEqual(c2.Z, want2.Z) {
+		t.Fatalf("skew segments c2: got %#v, want %#v", c2, want2)
+	}
+}
+
+func TestClosestPointsBetweenSegmentsParallel(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{0, 1, 0},
+		B: Vec3{2, 1, 0},
+	}
+
+	c1, c2 := ClosestPointsBetweenSegments(s1, s2)
+
+	if !AlmostEqual(c1.Y, 0) || !AlmostEqual(c2.Y, 1) {
+		t.Fatalf("parallel segments: got %#v and %#v", c1, c2)
+	}
+	if !AlmostEqual(c1.Distance(c2), 1) {
+		t.Fatalf("parallel segments distance: got %v, want 1", c1.Distance(c2))
+	}
+}
+
+func TestClosestPointsBetweenSegmentsDegenerate(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{1, 2, 3},
+		B: Vec3{1, 2, 3},
+	}
+	s2 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+	}
+
+	c1, c2 := ClosestPointsBetweenSegments(s1, s2)
+	want1 := Vec3{1, 2, 3}
+	want2 := Vec3{1, 0, 0}
+
+	if c1 != want1 {
+		t.Fatalf("degenerate segment c1: got %#v, want %#v", c1, want1)
+	}
+	if c2 != want2 {
+		t.Fatalf("degenerate segment c2: got %#v, want %#v", c2, want2)
+	}
+}
+func TestClosestPointsBetweenSegmentsOverlappingCollinear(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{2, 0, 0},
+		B: Vec3{6, 0, 0},
+	}
+
+	c1, c2 := ClosestPointsBetweenSegments(s1, s2)
+
+	if !AlmostEqual(c1.Distance(c2), 0) {
+		t.Fatalf("overlapping collinear segments: got points %#v and %#v with distance %v, want distance 0", c1, c2, c1.Distance(c2))
+	}
+}
+
+func TestClosestPointsBetweenSegmentsEndpointToEndpoint(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{1, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{2, 1, 0},
+		B: Vec3{2, 2, 0},
+	}
+
+	c1, c2 := ClosestPointsBetweenSegments(s1, s2)
+	want1 := Vec3{1, 0, 0}
+	want2 := Vec3{2, 1, 0}
+
+	if c1 != want1 || c2 != want2 {
+		t.Fatalf("endpoint-to-endpoint nearest: got %#v and %#v, want %#v and %#v", c1, c2, want1, want2)
+	}
+}
+
+func TestClosestPointsBetweenSegmentsOneDegenerateOneNormal(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{1, 2, 0},
+		B: Vec3{1, 2, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+	}
+
+	c1, c2 := ClosestPointsBetweenSegments(s1, s2)
+	want1 := Vec3{1, 2, 0}
+	want2 := Vec3{1, 0, 0}
+
+	if c1 != want1 || c2 != want2 {
+		t.Fatalf("one degenerate one normal: got %#v and %#v, want %#v and %#v", c1, c2, want1, want2)
+	}
+}
+
 func ExampleClosestPointOnSegment() {
 	seg := Segment3{
 		A: Vec3{X: 0, Y: 0, Z: 0},
@@ -160,4 +296,23 @@ func ExampleClosestPointOnTriangle() {
 
 	// Output:
 	// 0.5 0.5 0.0
+}
+func ExampleClosestPointsBetweenSegments() {
+	s1 := Segment3{
+		A: Vec3{X: 0, Y: 0, Z: 0},
+		B: Vec3{X: 2, Y: 0, Z: 0},
+	}
+	s2 := Segment3{
+		A: Vec3{X: 1, Y: 1, Z: 0},
+		B: Vec3{X: 1, Y: -1, Z: 0},
+	}
+
+	c1, c2 := ClosestPointsBetweenSegments(s1, s2)
+
+	fmt.Println(c1)
+	fmt.Println(c2)
+
+	// Output:
+	// {1 0 0}
+	// {1 0 0}
 }

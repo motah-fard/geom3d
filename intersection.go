@@ -112,3 +112,30 @@ func IntersectRayAABB(r Ray3, b AABB) (bool, float64, float64) {
 
 	return true, tMin, tMax
 }
+
+// IntersectSegments reports whether segments s1 and s2 intersect at a single point.
+//
+// If they intersect at a single point, it returns that point and true.
+//
+// If they are disjoint, skew, parallel without intersection, or overlap over a
+// non-zero interval, it returns Vec3{} and false.
+func IntersectSegments(s1, s2 Segment3) (Vec3, bool) {
+	c1, c2 := ClosestPointsBetweenSegments(s1, s2)
+
+	if !AlmostZero(c1.Distance(c2)) {
+		return Vec3{}, false
+	}
+
+	// Reject collinear overlap as a non-unique intersection.
+	d1 := s1.Direction()
+	d2 := s2.Direction()
+
+	if AlmostZero(d1.Cross(d2).Norm()) {
+		v := s2.A.Sub(s1.A)
+		if AlmostZero(v.Cross(d1).Norm()) {
+			return Vec3{}, false
+		}
+	}
+
+	return c1, true
+}

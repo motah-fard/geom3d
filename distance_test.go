@@ -203,6 +203,112 @@ func TestDistancePointToTriangleDegenerate(t *testing.T) {
 		t.Fatalf("DistancePointToTriangle degenerate: got %v, want %v", got, want)
 	}
 }
+func TestDistanceBetweenSegmentsIntersecting(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{1, -1, 0},
+		B: Vec3{1, 1, 0},
+	}
+
+	got := DistanceBetweenSegments(s1, s2)
+	want := 0.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistanceBetweenSegments intersecting: got %v, want %v", got, want)
+	}
+}
+
+func TestDistanceBetweenSegmentsParallel(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{0, 1, 0},
+		B: Vec3{2, 1, 0},
+	}
+
+	got := DistanceBetweenSegments(s1, s2)
+	want := 1.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistanceBetweenSegments parallel: got %v, want %v", got, want)
+	}
+}
+
+func TestDistanceBetweenSegmentsSkew(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{1, 1, 1},
+		B: Vec3{1, 1, -1},
+	}
+
+	got := DistanceBetweenSegments(s1, s2)
+	want := 1.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistanceBetweenSegments skew: got %v, want %v", got, want)
+	}
+}
+func TestDistanceBetweenSegmentsOverlappingCollinear(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{2, 0, 0},
+		B: Vec3{6, 0, 0},
+	}
+
+	got := DistanceBetweenSegments(s1, s2)
+	want := 0.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistanceBetweenSegments overlapping collinear: got %v, want %v", got, want)
+	}
+}
+
+func TestDistanceBetweenSegmentsEndpointToEndpoint(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{1, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{2, 1, 0},
+		B: Vec3{2, 2, 0},
+	}
+
+	got := DistanceBetweenSegments(s1, s2)
+	want := Vec3{1, 0, 0}.Distance(Vec3{2, 1, 0})
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistanceBetweenSegments endpoint-to-endpoint: got %v, want %v", got, want)
+	}
+}
+
+func TestDistanceBetweenSegmentsOneDegenerateOneNormal(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{1, 2, 0},
+		B: Vec3{1, 2, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+	}
+
+	got := DistanceBetweenSegments(s1, s2)
+	want := 2.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistanceBetweenSegments one degenerate one normal: got %v, want %v", got, want)
+	}
+}
 func ExampleDistancePointToPlane() {
 	pl := Plane{
 		Point:  Vec3{X: 0, Y: 0, Z: 0},
@@ -249,4 +355,19 @@ func ExampleDistancePointToTriangle() {
 
 	// Output:
 	// 3
+}
+func ExampleDistanceBetweenSegments() {
+	s1 := Segment3{
+		A: Vec3{X: 0, Y: 0, Z: 0},
+		B: Vec3{X: 2, Y: 0, Z: 0},
+	}
+	s2 := Segment3{
+		A: Vec3{X: 0, Y: 1, Z: 0},
+		B: Vec3{X: 2, Y: 1, Z: 0},
+	}
+
+	fmt.Println(DistanceBetweenSegments(s1, s2))
+
+	// Output:
+	// 1
 }

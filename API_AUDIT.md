@@ -27,11 +27,17 @@
 - ClosestPointOnTriangle
 - DistancePointToTriangle
 
+## Added in v0.4.0
+- ClosestPointsBetweenSegments
+- DistanceBetweenSegments
+- IntersectSegments
+
 ## Review later
 - Whether additional projection helpers should be added to match `ProjectPointToLine`
 - Whether more closest-point helpers should be added for rays or line-line / segment-segment queries
 - Whether future intersection helpers should return richer result types or tuples
 - Whether triangle-related helpers should expand further before `v1.0.0`
+- Whether overlapping collinear segment intersection should eventually have a richer helper
 
 ## Current API direction
 - Keep primitive object behavior as methods
@@ -45,13 +51,16 @@
   - `DistancePointToSegment`
   - `DistancePointToLine`
   - `DistancePointToTriangle`
+  - `DistanceBetweenSegments`
   - `ProjectPointToPlane`
   - `ProjectPointToLine`
   - `BarycentricCoordinates`
   - `ClosestPointOnSegment`
   - `ClosestPointOnTriangle`
+  - `ClosestPointsBetweenSegments`
   - `IntersectRayPlane`
   - `IntersectSegmentPlane`
+  - `IntersectSegments`
 
 ## Notes toward v1.0.0
 The public API is now more coherent and practically useful than in early releases.

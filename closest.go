@@ -76,7 +76,6 @@ func ClosestPointOnTriangle(p Vec3, t Triangle) Vec3 {
 
 	denom := va + vb + vc
 	if AlmostZero(denom) {
-		// Degenerate triangle fallback.
 		ab2 := ab.Norm2()
 		ac2 := ac.Norm2()
 		bc := c.Sub(b)
@@ -99,4 +98,78 @@ func ClosestPointOnTriangle(p Vec3, t Triangle) Vec3 {
 	w := vc * invDenom
 
 	return a.Add(ab.Scale(v)).Add(ac.Scale(w))
+}
+
+func clamp01(x float64) float64 {
+	if x < 0 {
+		return 0
+	}
+	if x > 1 {
+		return 1
+	}
+	return x
+}
+
+// ClosestPointsBetweenSegments returns the pair of closest points on segments
+// s1 and s2.
+//
+// If either segment is degenerate, it falls back to the corresponding
+// point-segment query. If both are degenerate, it returns their endpoints.
+func ClosestPointsBetweenSegments(s1, s2 Segment3) (Vec3, Vec3) {
+	p1 := s1.A
+	q1 := s1.B
+	p2 := s2.A
+	q2 := s2.B
+
+	d1 := q1.Sub(p1)
+	d2 := q2.Sub(p2)
+	r := p1.Sub(p2)
+
+	a := d1.Dot(d1)
+	e := d2.Dot(d2)
+	f := d2.Dot(r)
+
+	// Both segments degenerate to points.
+	if AlmostZero(a) && AlmostZero(e) {
+		return p1, p2
+	}
+
+	// First segment degenerates to a point.
+	if AlmostZero(a) {
+		t := clamp01(f / e)
+		return p1, p2.Add(d2.Scale(t))
+	}
+
+	c := d1.Dot(r)
+
+	// Second segment degenerates to a point.
+	if AlmostZero(e) {
+		s := clamp01(-c / a)
+		return p1.Add(d1.Scale(s)), p2
+	}
+
+	b := d1.Dot(d2)
+	denom := a*e - b*b
+
+	var s float64
+	if !AlmostZero(denom) {
+		s = clamp01((b*f - c*e) / denom)
+	} else {
+		// Parallel or nearly parallel.
+		s = 0
+	}
+
+	t := (b*s + f) / e
+
+	if t < 0 {
+		t = 0
+		s = clamp01(-c / a)
+	} else if t > 1 {
+		t = 1
+		s = clamp01((b - c) / a)
+	}
+
+	c1 := p1.Add(d1.Scale(s))
+	c2 := p2.Add(d2.Scale(t))
+	return c1, c2
 }

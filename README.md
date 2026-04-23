@@ -27,12 +27,14 @@ The library is intentionally small, explicit, and easy to use.
   - distance calculations
   - projections onto planes and lines
   - closest point on a segment
+  - closest point on a triangle
+  - closest points between segments
   - ray-plane intersection
   - segment-plane intersection
+  - segment-segment intersection at a single point
   - ray-AABB intersection with hit interval output (`hit`, `tMin`, `tMax`)
   - barycentric coordinates
-  - closest point on a triangle
-  - point-to-segment, point-to-line, and point-to-triangle distance queries
+  - point-to-segment, point-to-line, point-to-triangle, and segment-to-segment distance queries
 - 3D rotations with `Mat3`
 - Rigid transforms with `Transform`
   - apply to points and vectors
@@ -49,7 +51,9 @@ Typical use cases include:
 
 - projecting points onto planes or lines
 - finding the closest point on a segment or triangle
+- computing closest points or minimum distance between segments
 - checking ray intersections with planes or bounding boxes
+- testing whether two segments intersect at a single point
 - computing barycentric coordinates for triangle-based workflows
 - applying and composing rigid transforms
 - working with coordinate frames in engineering or sensor-based applications
@@ -125,11 +129,14 @@ The package includes helpers for:
 - point-to-segment distance
 - point-to-line distance
 - point-to-triangle distance
+- segment-to-segment distance
 - point projection to planes and lines
 - barycentric coordinates
 - closest-point queries on segments and triangles
+- closest-point queries between segments
 - ray-plane intersection
 - segment-plane intersection
+- segment-segment intersection
 - ray-AABB intersection
 
 ## Examples
@@ -142,6 +149,10 @@ Runnable examples are included under the `examples/` directory, including:
 - `segment_closest_point`
 - `aabb_ray`
 - `triangle_normal`
+- `triangle_closest_point`
+- `triangle_barycentric`
+- `segment_segment_closest`
+- `segment_segment_distance`
 - `transform_point`
 
 ## API stability

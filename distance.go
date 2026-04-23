@@ -44,3 +44,10 @@ func DistancePointToTriangle(p Vec3, t Triangle) float64 {
 	cp := ClosestPointOnTriangle(p, t)
 	return p.Distance(cp)
 }
+
+// DistanceBetweenSegments returns the Euclidean distance between segments s1
+// and s2.
+func DistanceBetweenSegments(s1, s2 Segment3) float64 {
+	c1, c2 := ClosestPointsBetweenSegments(s1, s2)
+	return c1.Distance(c2)
+}

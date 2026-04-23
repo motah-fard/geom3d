@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.4.0]
+### Added
+- Added `ClosestPointsBetweenSegments`
+- Added `DistanceBetweenSegments`
+- Added `IntersectSegments`
+
+### Improved
+- Expanded segment-segment query support
+- Added edge-case coverage for overlapping collinear segments, endpoint-touching segments, skew disjoint segments, and degenerate segment cases
+- Strengthened practical support for segment-based geometry workflows
+
 ## [v0.3.0]
 ### Added
 - Added `DistancePointToSegment`

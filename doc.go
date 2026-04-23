@@ -11,8 +11,9 @@
 // Core features:
 //   - Vec3 operations: dot, cross, norm, normalization, distances
 //   - Geometry primitives: Ray3, Segment3, Plane, Triangle, AABB
-//   - Practical operations: projection, closest point, signed distance,
-//     ray-plane intersection, segment-plane intersection, ray-AABB intersection
+//   - Practical operations: projection, barycentric coordinates, closest point,
+//     signed distance, ray-plane intersection, segment-plane intersection,
+//     segment-segment queries, and ray-AABB intersection
 //   - Rigid transforms: Mat3 rotations and Transform composition/inversion
 //
 // Non-goals:

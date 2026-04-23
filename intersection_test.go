@@ -183,6 +183,95 @@ func TestIntersectRayAABBParallelOutside(t *testing.T) {
 		t.Fatal("expected parallel ray outside slab to miss AABB")
 	}
 }
+func TestIntersectSegmentsCrossing(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{1, -1, 0},
+		B: Vec3{1, 1, 0},
+	}
+
+	got, ok := IntersectSegments(s1, s2)
+	want := Vec3{1, 0, 0}
+
+	if !ok {
+		t.Fatal("expected segments to intersect")
+	}
+	if got != want {
+		t.Fatalf("IntersectSegments crossing: got %#v, want %#v", got, want)
+	}
+}
+
+func TestIntersectSegmentsEndpointTouch(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{1, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{1, 0, 0},
+		B: Vec3{1, 1, 0},
+	}
+
+	got, ok := IntersectSegments(s1, s2)
+	want := Vec3{1, 0, 0}
+
+	if !ok {
+		t.Fatal("expected endpoint-touching segments to intersect")
+	}
+	if got != want {
+		t.Fatalf("IntersectSegments endpoint touch: got %#v, want %#v", got, want)
+	}
+}
+
+func TestIntersectSegmentsParallelDisjoint(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{0, 1, 0},
+		B: Vec3{2, 1, 0},
+	}
+
+	_, ok := IntersectSegments(s1, s2)
+	if ok {
+		t.Fatal("expected parallel disjoint segments not to intersect")
+	}
+}
+
+func TestIntersectSegmentsSkewDisjoint(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{1, 1, 1},
+		B: Vec3{1, 1, -1},
+	}
+
+	_, ok := IntersectSegments(s1, s2)
+	if ok {
+		t.Fatal("expected skew disjoint segments not to intersect")
+	}
+}
+
+func TestIntersectSegmentsOverlappingCollinear(t *testing.T) {
+	s1 := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+	}
+	s2 := Segment3{
+		A: Vec3{2, 0, 0},
+		B: Vec3{6, 0, 0},
+	}
+
+	_, ok := IntersectSegments(s1, s2)
+	if ok {
+		t.Fatal("expected overlapping collinear segments to return false for non-unique intersection")
+	}
+}
 
 func ExampleIntersectSegmentPlane() {
 	s := Segment3{
@@ -268,4 +357,22 @@ func ExampleIntersectRayPlane_parallel() {
 	// Output:
 	// false
 	// {0 0 0}
+}
+func ExampleIntersectSegments() {
+	s1 := Segment3{
+		A: Vec3{X: 0, Y: 0, Z: 0},
+		B: Vec3{X: 2, Y: 0, Z: 0},
+	}
+	s2 := Segment3{
+		A: Vec3{X: 1, Y: -1, Z: 0},
+		B: Vec3{X: 1, Y: 1, Z: 0},
+	}
+
+	p, ok := IntersectSegments(s1, s2)
+	fmt.Println(ok)
+	fmt.Println(p)
+
+	// Output:
+	// true
+	// {1 0 0}
 }
