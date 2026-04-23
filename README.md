@@ -142,6 +142,17 @@ The package includes helpers for:
 - collinear segment overlap detection
 - ray-AABB intersection
 
+## Behavior notes
+
+A few helpers have intentionally specific semantics:
+
+- `IntersectSegments` reports only **single-point** intersections. If two segments overlap over a non-zero interval, it returns `false`.
+- `SegmentsOverlap` reports only **collinear overlap over a non-zero interval**. Endpoint-only touching does not count as overlap.
+- `IntersectRayAABB` returns `hit, tMin, tMax`. If the ray starts inside the box, `tMin` may be `0`.
+- `ClosestPointOnRay` clamps to the ray origin when the orthogonal projection falls behind the origin.
+- `ClosestPointOnAABB` returns the input point itself when the point lies inside the box.
+- Helpers that receive invalid rays, invalid AABBs, or other degenerate inputs document their fallback behavior in GoDoc.
+
 ## Examples
 
 Runnable examples are included under the `examples/` directory, including:
@@ -165,9 +176,9 @@ Runnable examples are included under the `examples/` directory, including:
 
 ## API stability
 
-`geom3d` is currently pre-v1.
+`geom3d` is approaching `v1.0.0`.
 
-APIs may still be refined before the `v1.0.0` release. The goal of the pre-v1 releases is to stabilize naming, behavior, and package scope while keeping the package practical and easy to use.
+The current focus is API stability, edge-case confidence, and documentation clarity. Remaining changes before `v1.0.0` should be small, deliberate, and centered on correctness rather than feature growth.
 
 ## License
 

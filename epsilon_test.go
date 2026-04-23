@@ -11,6 +11,8 @@ func TestAlmostZero(t *testing.T) {
 		{name: "exact zero", x: 0, want: true},
 		{name: "within epsilon positive", x: Epsilon / 2, want: true},
 		{name: "within epsilon negative", x: -Epsilon / 2, want: true},
+		{name: "at epsilon positive", x: Epsilon, want: true},
+		{name: "at epsilon negative", x: -Epsilon, want: true},
 		{name: "outside epsilon positive", x: 2 * Epsilon, want: false},
 		{name: "outside epsilon negative", x: -2 * Epsilon, want: false},
 	}
@@ -46,5 +48,14 @@ func TestAlmostEqual(t *testing.T) {
 				t.Fatalf("AlmostEqual(%v, %v) = %v, want %v", tc.a, tc.b, got, tc.want)
 			}
 		})
+	}
+}
+
+func TestAlmostEqualSymmetric(t *testing.T) {
+	a := 1.0
+	b := 1.0 + Epsilon/2
+
+	if AlmostEqual(a, b) != AlmostEqual(b, a) {
+		t.Fatal("AlmostEqual should be symmetric")
 	}
 }
