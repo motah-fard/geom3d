@@ -14,8 +14,50 @@
 - Distance / Distance2
 - IsValid
 - IsDegenerate
+- ProjectPointToLine
+- Current method vs free-function split
 
-## Review
-- IntersectRayAABB returns only bool
-- ProjectPointToLine naming vs future projection naming
-- Whether more methods should become type methods vs free functions
+## Changed
+- IntersectRayAABB now returns `(hit, tMin, tMax)` instead of only `bool`
+
+## Added in v0.3.0
+- DistancePointToSegment
+- DistancePointToLine
+- BarycentricCoordinates
+- ClosestPointOnTriangle
+- DistancePointToTriangle
+
+## Review later
+- Whether additional projection helpers should be added to match `ProjectPointToLine`
+- Whether more closest-point helpers should be added for rays or line-line / segment-segment queries
+- Whether future intersection helpers should return richer result types or tuples
+- Whether triangle-related helpers should expand further before `v1.0.0`
+
+## Current API direction
+- Keep primitive object behavior as methods
+  - `Vec3.Norm`
+  - `Segment3.Length`
+  - `Triangle.Area`
+  - `Plane.UnitNormal`
+
+- Keep geometric relations between multiple objects as free functions
+  - `DistancePointToPlane`
+  - `DistancePointToSegment`
+  - `DistancePointToLine`
+  - `DistancePointToTriangle`
+  - `ProjectPointToPlane`
+  - `ProjectPointToLine`
+  - `BarycentricCoordinates`
+  - `ClosestPointOnSegment`
+  - `ClosestPointOnTriangle`
+  - `IntersectRayPlane`
+  - `IntersectSegmentPlane`
+
+## Notes toward v1.0.0
+The public API is now more coherent and practically useful than in early releases.
+
+Before `v1.0.0`, remaining review should focus on:
+- any missing core geometry queries
+- whether current triangle support is sufficient
+- whether any return shapes should be standardized further
+- whether any additional convenience helpers are essential enough to freeze into the public API

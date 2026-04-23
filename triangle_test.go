@@ -72,6 +72,7 @@ func TestTriangleEdgeAC(t *testing.T) {
 		t.Fatalf("EdgeAC: got %#v, want %#v", got, want)
 	}
 }
+
 func ExampleTriangle_Normal() {
 	tri := Triangle{
 		A: Vec3{X: 0, Y: 0, Z: 0},

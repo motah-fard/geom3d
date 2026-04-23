@@ -30,6 +30,9 @@ The library is intentionally small, explicit, and easy to use.
   - ray-plane intersection
   - segment-plane intersection
   - ray-AABB intersection with hit interval output (`hit`, `tMin`, `tMax`)
+  - barycentric coordinates
+  - closest point on a triangle
+  - point-to-segment, point-to-line, and point-to-triangle distance queries
 - 3D rotations with `Mat3`
 - Rigid transforms with `Transform`
   - apply to points and vectors
@@ -45,8 +48,9 @@ The Go ecosystem already has solid low-level math and graphics-oriented packages
 Typical use cases include:
 
 - projecting points onto planes or lines
-- finding the closest point on a segment
+- finding the closest point on a segment or triangle
 - checking ray intersections with planes or bounding boxes
+- computing barycentric coordinates for triangle-based workflows
 - applying and composing rigid transforms
 - working with coordinate frames in engineering or sensor-based applications
 
@@ -118,8 +122,12 @@ The package includes practical 3D primitives for common geometric workflows:
 The package includes helpers for:
 
 - point-to-plane distance
+- point-to-segment distance
+- point-to-line distance
+- point-to-triangle distance
 - point projection to planes and lines
-- closest-point queries on segments
+- barycentric coordinates
+- closest-point queries on segments and triangles
 - ray-plane intersection
 - segment-plane intersection
 - ray-AABB intersection

@@ -52,6 +52,157 @@ func TestDistancePointToPlaneInvalidPlane(t *testing.T) {
 	}
 }
 
+func TestDistancePointToSegment(t *testing.T) {
+	s := Segment3{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+	}
+
+	tests := []struct {
+		name string
+		p    Vec3
+		want float64
+	}{
+		{
+			name: "point above middle of segment",
+			p:    Vec3{2, 3, 0},
+			want: 3,
+		},
+		{
+			name: "point before start of segment",
+			p:    Vec3{-1, 0, 0},
+			want: 1,
+		},
+		{
+			name: "point after end of segment",
+			p:    Vec3{6, 0, 0},
+			want: 2,
+		},
+		{
+			name: "point on segment",
+			p:    Vec3{1, 0, 0},
+			want: 0,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := DistancePointToSegment(tc.p, s)
+			if !AlmostEqual(got, tc.want) {
+				t.Fatalf("DistancePointToSegment(%v, s) = %v, want %v", tc.p, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestDistancePointToSegmentDegenerate(t *testing.T) {
+	s := Segment3{
+		A: Vec3{1, 2, 3},
+		B: Vec3{1, 2, 3},
+	}
+	p := Vec3{4, 6, 3}
+
+	got := DistancePointToSegment(p, s)
+	want := 5.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToSegment degenerate: got %v, want %v", got, want)
+	}
+}
+func TestDistancePointToLine(t *testing.T) {
+	a := Vec3{0, 0, 0}
+	b := Vec3{4, 0, 0}
+
+	tests := []struct {
+		name string
+		p    Vec3
+		want float64
+	}{
+		{
+			name: "point above line",
+			p:    Vec3{2, 3, 0},
+			want: 3,
+		},
+		{
+			name: "point before line start but same infinite line",
+			p:    Vec3{-1, 2, 0},
+			want: 2,
+		},
+		{
+			name: "point on line",
+			p:    Vec3{10, 0, 0},
+			want: 0,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := DistancePointToLine(tc.p, a, b)
+			if !AlmostEqual(got, tc.want) {
+				t.Fatalf("DistancePointToLine(%v, a, b) = %v, want %v", tc.p, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestDistancePointToLineDegenerate(t *testing.T) {
+	a := Vec3{1, 2, 3}
+	p := Vec3{4, 6, 3}
+
+	got := DistancePointToLine(p, a, a)
+	want := 5.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToLine degenerate: got %v, want %v", got, want)
+	}
+}
+func TestDistancePointToTriangleFaceRegion(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+		C: Vec3{0, 2, 0},
+	}
+
+	p := Vec3{0.5, 0.5, 3}
+	got := DistancePointToTriangle(p, tri)
+	want := 3.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToTriangle face region: got %v, want %v", got, want)
+	}
+}
+
+func TestDistancePointToTriangleEdgeRegion(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+		C: Vec3{0, 2, 0},
+	}
+
+	p := Vec3{1, -2, 0}
+	got := DistancePointToTriangle(p, tri)
+	want := 2.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToTriangle edge region: got %v, want %v", got, want)
+	}
+}
+
+func TestDistancePointToTriangleDegenerate(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{1, 0, 0},
+		C: Vec3{2, 0, 0},
+	}
+
+	p := Vec3{1, 3, 0}
+	got := DistancePointToTriangle(p, tri)
+	want := 3.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToTriangle degenerate: got %v, want %v", got, want)
+	}
+}
 func ExampleDistancePointToPlane() {
 	pl := Plane{
 		Point:  Vec3{X: 0, Y: 0, Z: 0},
@@ -63,4 +214,39 @@ func ExampleDistancePointToPlane() {
 
 	// Output:
 	// 5
+}
+func ExampleDistancePointToSegment() {
+	s := Segment3{
+		A: Vec3{X: 0, Y: 0, Z: 0},
+		B: Vec3{X: 4, Y: 0, Z: 0},
+	}
+	p := Vec3{X: 2, Y: 3, Z: 0}
+
+	fmt.Println(DistancePointToSegment(p, s))
+
+	// Output:
+	// 3
+}
+func ExampleDistancePointToLine() {
+	a := Vec3{X: 0, Y: 0, Z: 0}
+	b := Vec3{X: 4, Y: 0, Z: 0}
+	p := Vec3{X: 2, Y: 3, Z: 0}
+
+	fmt.Println(DistancePointToLine(p, a, b))
+
+	// Output:
+	// 3
+}
+func ExampleDistancePointToTriangle() {
+	tri := Triangle{
+		A: Vec3{X: 0, Y: 0, Z: 0},
+		B: Vec3{X: 2, Y: 0, Z: 0},
+		C: Vec3{X: 0, Y: 2, Z: 0},
+	}
+
+	p := Vec3{X: 0.5, Y: 0.5, Z: 3}
+	fmt.Println(DistancePointToTriangle(p, tri))
+
+	// Output:
+	// 3
 }

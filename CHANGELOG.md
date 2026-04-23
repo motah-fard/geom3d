@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.3.0]
+### Added
+- Added `DistancePointToSegment`
+- Added `DistancePointToLine`
+- Added `BarycentricCoordinates`
+- Added `ClosestPointOnTriangle`
+- Added `DistancePointToTriangle`
+
+### Improved
+- Expanded triangle support and point-query capabilities
+- Updated documentation and package overview to reflect the new geometry helpers
+- Strengthened practical coverage for line, segment, and triangle workflows
+
 ## [v0.2.0]
 ### Changed
 - Refined `IntersectRayAABB` to return `(hit, tMin, tMax)` instead of only a boolean
