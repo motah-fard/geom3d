@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.5.0]
+### Added
+- Added `ClosestPointOnRay`
+- Added `DistancePointToRay`
+- Added `ClosestPointOnAABB`
+- Added `DistancePointToAABB`
+- Added `SegmentsOverlap`
+
+### Improved
+- Expanded ray query support
+- Expanded AABB point-query support
+- Added a dedicated helper for collinear segment overlap detection
+- Updated documentation, examples, and API audit notes for the new ray, AABB, and segment helpers
+- Strengthened practical pre-v1 geometry coverage across rays, segments, triangles, and boxes
+
 ## [v0.4.0]
 ### Added
 - Added `ClosestPointsBetweenSegments`

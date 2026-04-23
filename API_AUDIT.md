@@ -32,12 +32,19 @@
 - DistanceBetweenSegments
 - IntersectSegments
 
+## Added in v0.5.0
+- ClosestPointOnRay
+- DistancePointToRay
+- ClosestPointOnAABB
+- DistancePointToAABB
+- SegmentsOverlap
+
 ## Review later
 - Whether additional projection helpers should be added to match `ProjectPointToLine`
 - Whether more closest-point helpers should be added for rays or line-line / segment-segment queries
 - Whether future intersection helpers should return richer result types or tuples
 - Whether triangle-related helpers should expand further before `v1.0.0`
-- Whether overlapping collinear segment intersection should eventually have a richer helper
+- Whether overlapping collinear segment behavior should eventually have a richer relation helper
 
 ## Current API direction
 - Keep primitive object behavior as methods
@@ -48,25 +55,30 @@
 
 - Keep geometric relations between multiple objects as free functions
   - `DistancePointToPlane`
+  - `DistancePointToRay`
   - `DistancePointToSegment`
   - `DistancePointToLine`
   - `DistancePointToTriangle`
+  - `DistancePointToAABB`
   - `DistanceBetweenSegments`
   - `ProjectPointToPlane`
   - `ProjectPointToLine`
   - `BarycentricCoordinates`
+  - `ClosestPointOnRay`
   - `ClosestPointOnSegment`
   - `ClosestPointOnTriangle`
+  - `ClosestPointOnAABB`
   - `ClosestPointsBetweenSegments`
   - `IntersectRayPlane`
   - `IntersectSegmentPlane`
   - `IntersectSegments`
+  - `SegmentsOverlap`
 
 ## Notes toward v1.0.0
 The public API is now more coherent and practically useful than in early releases.
 
 Before `v1.0.0`, remaining review should focus on:
 - any missing core geometry queries
-- whether current triangle support is sufficient
+- whether current ray, triangle, segment, and AABB support is sufficient
 - whether any return shapes should be standardized further
 - whether any additional convenience helpers are essential enough to freeze into the public API

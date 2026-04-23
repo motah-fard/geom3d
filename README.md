@@ -26,15 +26,15 @@ The library is intentionally small, explicit, and easy to use.
   - norm and normalization
   - distance calculations
   - projections onto planes and lines
-  - closest point on a segment
-  - closest point on a triangle
+  - closest point on a ray, segment, triangle, and AABB
   - closest points between segments
   - ray-plane intersection
   - segment-plane intersection
   - segment-segment intersection at a single point
+  - collinear segment overlap detection
   - ray-AABB intersection with hit interval output (`hit`, `tMin`, `tMax`)
   - barycentric coordinates
-  - point-to-segment, point-to-line, point-to-triangle, and segment-to-segment distance queries
+  - point-to-ray, point-to-segment, point-to-line, point-to-triangle, point-to-AABB, and segment-to-segment distance queries
 - 3D rotations with `Mat3`
 - Rigid transforms with `Transform`
   - apply to points and vectors
@@ -50,10 +50,10 @@ The Go ecosystem already has solid low-level math and graphics-oriented packages
 Typical use cases include:
 
 - projecting points onto planes or lines
-- finding the closest point on a segment or triangle
+- finding the closest point on a ray, segment, triangle, or bounding box
 - computing closest points or minimum distance between segments
 - checking ray intersections with planes or bounding boxes
-- testing whether two segments intersect at a single point
+- testing whether two segments intersect at a single point or overlap collinearly
 - computing barycentric coordinates for triangle-based workflows
 - applying and composing rigid transforms
 - working with coordinate frames in engineering or sensor-based applications
@@ -126,17 +126,20 @@ The package includes practical 3D primitives for common geometric workflows:
 The package includes helpers for:
 
 - point-to-plane distance
+- point-to-ray distance
 - point-to-segment distance
 - point-to-line distance
 - point-to-triangle distance
+- point-to-AABB distance
 - segment-to-segment distance
 - point projection to planes and lines
 - barycentric coordinates
-- closest-point queries on segments and triangles
+- closest-point queries on rays, segments, triangles, and AABBs
 - closest-point queries between segments
 - ray-plane intersection
 - segment-plane intersection
 - segment-segment intersection
+- collinear segment overlap detection
 - ray-AABB intersection
 
 ## Examples
@@ -145,14 +148,19 @@ Runnable examples are included under the `examples/` directory, including:
 
 - `basic_vectors`
 - `ray_plane`
+- `ray_closest_point`
+- `ray_distance`
 - `plane_projection`
 - `segment_closest_point`
+- `segment_overlap`
+- `segment_segment_closest`
+- `segment_segment_distance`
 - `aabb_ray`
+- `aabb_closest_point`
+- `aabb_distance`
 - `triangle_normal`
 - `triangle_closest_point`
 - `triangle_barycentric`
-- `segment_segment_closest`
-- `segment_segment_distance`
 - `transform_point`
 
 ## API stability

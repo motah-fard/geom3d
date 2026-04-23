@@ -173,3 +173,55 @@ func ClosestPointsBetweenSegments(s1, s2 Segment3) (Vec3, Vec3) {
 	c2 := p2.Add(d2.Scale(t))
 	return c1, c2
 }
+
+// ClosestPointOnRay returns the closest point on ray r to point p.
+//
+// If the orthogonal projection of p onto the supporting line falls behind the
+// ray origin, it returns r.Origin.
+//
+// If the ray is invalid, it returns Vec3{}.
+func ClosestPointOnRay(p Vec3, r Ray3) Vec3 {
+	if !r.IsValid() {
+		return Vec3{}
+	}
+
+	denom := r.Dir.Norm2()
+	if AlmostZero(denom) {
+		return Vec3{}
+	}
+
+	t := p.Sub(r.Origin).Dot(r.Dir) / denom
+	if t <= 0 {
+		return r.Origin
+	}
+
+	return r.PointAt(t)
+}
+
+// ClosestPointOnAABB returns the closest point on axis-aligned bounding box b
+// to point p.
+//
+// If p lies inside the box, it returns p.
+//
+// If the box is invalid, it returns Vec3{}.
+func ClosestPointOnAABB(p Vec3, b AABB) Vec3 {
+	if !b.IsValid() {
+		return Vec3{}
+	}
+
+	clamp := func(x, min, max float64) float64 {
+		if x < min {
+			return min
+		}
+		if x > max {
+			return max
+		}
+		return x
+	}
+
+	return Vec3{
+		X: clamp(p.X, b.Min.X, b.Max.X),
+		Y: clamp(p.Y, b.Min.Y, b.Max.Y),
+		Z: clamp(p.Z, b.Min.Z, b.Max.Z),
+	}
+}

@@ -51,3 +51,30 @@ func DistanceBetweenSegments(s1, s2 Segment3) float64 {
 	c1, c2 := ClosestPointsBetweenSegments(s1, s2)
 	return c1.Distance(c2)
 }
+
+// DistancePointToRay returns the Euclidean distance from point p to ray r.
+//
+// If the ray is invalid, it returns 0.
+func DistancePointToRay(p Vec3, r Ray3) float64 {
+	if !r.IsValid() {
+		return 0
+	}
+
+	cp := ClosestPointOnRay(p, r)
+	return p.Distance(cp)
+}
+
+// DistancePointToAABB returns the Euclidean distance from point p
+// to axis-aligned bounding box b.
+//
+// If p lies inside the box, it returns 0.
+//
+// If the box is invalid, it returns 0.
+func DistancePointToAABB(p Vec3, b AABB) float64 {
+	if !b.IsValid() {
+		return 0
+	}
+
+	cp := ClosestPointOnAABB(p, b)
+	return p.Distance(cp)
+}

@@ -262,6 +262,121 @@ func TestClosestPointsBetweenSegmentsOneDegenerateOneNormal(t *testing.T) {
 		t.Fatalf("one degenerate one normal: got %#v and %#v, want %#v and %#v", c1, c2, want1, want2)
 	}
 }
+func TestClosestPointOnRayForwardProjection(t *testing.T) {
+	r := Ray3{
+		Origin: Vec3{0, 0, 0},
+		Dir:    Vec3{1, 0, 0},
+	}
+	p := Vec3{2, 3, 0}
+
+	got := ClosestPointOnRay(p, r)
+	want := Vec3{2, 0, 0}
+
+	if got != want {
+		t.Fatalf("ClosestPointOnRay forward projection: got %#v, want %#v", got, want)
+	}
+}
+
+func TestClosestPointOnRayBehindOrigin(t *testing.T) {
+	r := Ray3{
+		Origin: Vec3{1, 2, 3},
+		Dir:    Vec3{1, 0, 0},
+	}
+	p := Vec3{-5, 10, 3}
+
+	got := ClosestPointOnRay(p, r)
+	want := r.Origin
+
+	if got != want {
+		t.Fatalf("ClosestPointOnRay behind origin: got %#v, want %#v", got, want)
+	}
+}
+
+func TestClosestPointOnRayPointOnRay(t *testing.T) {
+	r := Ray3{
+		Origin: Vec3{0, 0, 0},
+		Dir:    Vec3{0, 0, 2},
+	}
+	p := Vec3{0, 0, 5}
+
+	got := ClosestPointOnRay(p, r)
+	want := Vec3{0, 0, 5}
+
+	if !AlmostEqual(got.X, want.X) || !AlmostEqual(got.Y, want.Y) || !AlmostEqual(got.Z, want.Z) {
+		t.Fatalf("ClosestPointOnRay point on ray: got %#v, want %#v", got, want)
+	}
+}
+
+func TestClosestPointOnRayInvalidRay(t *testing.T) {
+	r := Ray3{}
+	p := Vec3{1, 2, 3}
+
+	got := ClosestPointOnRay(p, r)
+	want := Vec3{}
+
+	if got != want {
+		t.Fatalf("ClosestPointOnRay invalid ray: got %#v, want %#v", got, want)
+	}
+}
+func TestClosestPointOnAABBOutside(t *testing.T) {
+	b := AABB{
+		Min: Vec3{0, 0, 0},
+		Max: Vec3{2, 2, 2},
+	}
+	p := Vec3{3, -1, 1}
+
+	got := ClosestPointOnAABB(p, b)
+	want := Vec3{2, 0, 1}
+
+	if got != want {
+		t.Fatalf("ClosestPointOnAABB outside: got %#v, want %#v", got, want)
+	}
+}
+
+func TestClosestPointOnAABBInside(t *testing.T) {
+	b := AABB{
+		Min: Vec3{0, 0, 0},
+		Max: Vec3{2, 2, 2},
+	}
+	p := Vec3{1, 1, 1}
+
+	got := ClosestPointOnAABB(p, b)
+	want := p
+
+	if got != want {
+		t.Fatalf("ClosestPointOnAABB inside: got %#v, want %#v", got, want)
+	}
+}
+
+func TestClosestPointOnAABBOnBoundary(t *testing.T) {
+	b := AABB{
+		Min: Vec3{0, 0, 0},
+		Max: Vec3{2, 2, 2},
+	}
+	p := Vec3{0, 1, 2}
+
+	got := ClosestPointOnAABB(p, b)
+	want := p
+
+	if got != want {
+		t.Fatalf("ClosestPointOnAABB boundary: got %#v, want %#v", got, want)
+	}
+}
+
+func TestClosestPointOnAABBInvalidBox(t *testing.T) {
+	b := AABB{
+		Min: Vec3{2, 2, 2},
+		Max: Vec3{0, 0, 0},
+	}
+	p := Vec3{1, 1, 1}
+
+	got := ClosestPointOnAABB(p, b)
+	want := Vec3{}
+
+	if got != want {
+		t.Fatalf("ClosestPointOnAABB invalid box: got %#v, want %#v", got, want)
+	}
+}
 
 func ExampleClosestPointOnSegment() {
 	seg := Segment3{
@@ -315,4 +430,28 @@ func ExampleClosestPointsBetweenSegments() {
 	// Output:
 	// {1 0 0}
 	// {1 0 0}
+}
+func ExampleClosestPointOnRay() {
+	r := Ray3{
+		Origin: Vec3{X: 0, Y: 0, Z: 0},
+		Dir:    Vec3{X: 1, Y: 0, Z: 0},
+	}
+	p := Vec3{X: 2, Y: 3, Z: 0}
+
+	fmt.Println(ClosestPointOnRay(p, r))
+
+	// Output:
+	// {2 0 0}
+}
+func ExampleClosestPointOnAABB() {
+	b := AABB{
+		Min: Vec3{X: 0, Y: 0, Z: 0},
+		Max: Vec3{X: 2, Y: 2, Z: 2},
+	}
+	p := Vec3{X: 3, Y: -1, Z: 1}
+
+	fmt.Println(ClosestPointOnAABB(p, b))
+
+	// Output:
+	// {2 0 1}
 }

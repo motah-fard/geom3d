@@ -309,6 +309,122 @@ func TestDistanceBetweenSegmentsOneDegenerateOneNormal(t *testing.T) {
 		t.Fatalf("DistanceBetweenSegments one degenerate one normal: got %v, want %v", got, want)
 	}
 }
+func TestDistancePointToRayForwardProjection(t *testing.T) {
+	r := Ray3{
+		Origin: Vec3{0, 0, 0},
+		Dir:    Vec3{1, 0, 0},
+	}
+	p := Vec3{2, 3, 0}
+
+	got := DistancePointToRay(p, r)
+	want := 3.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToRay forward projection: got %v, want %v", got, want)
+	}
+}
+
+func TestDistancePointToRayBehindOrigin(t *testing.T) {
+	r := Ray3{
+		Origin: Vec3{1, 2, 3},
+		Dir:    Vec3{1, 0, 0},
+	}
+	p := Vec3{-2, 6, 3}
+
+	got := DistancePointToRay(p, r)
+	want := 5.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToRay behind origin: got %v, want %v", got, want)
+	}
+}
+
+func TestDistancePointToRayPointOnRay(t *testing.T) {
+	r := Ray3{
+		Origin: Vec3{0, 0, 0},
+		Dir:    Vec3{0, 0, 2},
+	}
+	p := Vec3{0, 0, 5}
+
+	got := DistancePointToRay(p, r)
+	want := 0.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToRay point on ray: got %v, want %v", got, want)
+	}
+}
+
+func TestDistancePointToRayInvalidRay(t *testing.T) {
+	r := Ray3{}
+	p := Vec3{1, 2, 3}
+
+	got := DistancePointToRay(p, r)
+	want := 0.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToRay invalid ray: got %v, want %v", got, want)
+	}
+}
+func TestDistancePointToAABBOutside(t *testing.T) {
+	b := AABB{
+		Min: Vec3{0, 0, 0},
+		Max: Vec3{2, 2, 2},
+	}
+	p := Vec3{3, -1, 1}
+
+	got := DistancePointToAABB(p, b)
+	want := Vec3{3, -1, 1}.Distance(Vec3{2, 0, 1})
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToAABB outside: got %v, want %v", got, want)
+	}
+}
+
+func TestDistancePointToAABBInside(t *testing.T) {
+	b := AABB{
+		Min: Vec3{0, 0, 0},
+		Max: Vec3{2, 2, 2},
+	}
+	p := Vec3{1, 1, 1}
+
+	got := DistancePointToAABB(p, b)
+	want := 0.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToAABB inside: got %v, want %v", got, want)
+	}
+}
+
+func TestDistancePointToAABBOnBoundary(t *testing.T) {
+	b := AABB{
+		Min: Vec3{0, 0, 0},
+		Max: Vec3{2, 2, 2},
+	}
+	p := Vec3{0, 1, 2}
+
+	got := DistancePointToAABB(p, b)
+	want := 0.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToAABB boundary: got %v, want %v", got, want)
+	}
+}
+
+func TestDistancePointToAABBInvalidBox(t *testing.T) {
+	b := AABB{
+		Min: Vec3{2, 2, 2},
+		Max: Vec3{0, 0, 0},
+	}
+	p := Vec3{1, 1, 1}
+
+	got := DistancePointToAABB(p, b)
+	want := 0.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToAABB invalid box: got %v, want %v", got, want)
+	}
+}
+
 func ExampleDistancePointToPlane() {
 	pl := Plane{
 		Point:  Vec3{X: 0, Y: 0, Z: 0},
@@ -370,4 +486,28 @@ func ExampleDistanceBetweenSegments() {
 
 	// Output:
 	// 1
+}
+func ExampleDistancePointToRay() {
+	r := Ray3{
+		Origin: Vec3{X: 0, Y: 0, Z: 0},
+		Dir:    Vec3{X: 1, Y: 0, Z: 0},
+	}
+	p := Vec3{X: 2, Y: 3, Z: 0}
+
+	fmt.Println(DistancePointToRay(p, r))
+
+	// Output:
+	// 3
+}
+func ExampleDistancePointToAABB() {
+	b := AABB{
+		Min: Vec3{X: 0, Y: 0, Z: 0},
+		Max: Vec3{X: 2, Y: 2, Z: 2},
+	}
+	p := Vec3{X: 3, Y: -1, Z: 1}
+
+	fmt.Printf("%.4f\n", DistancePointToAABB(p, b))
+
+	// Output:
+	// 1.4142
 }
