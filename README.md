@@ -7,9 +7,9 @@
 
 `geom3d` is a practical Go library for 3D geometry and spatial calculations.
 
-It provides a focused set of tools for working with 3D vectors, geometric primitives, projections, distances, intersections, and rigid transforms in Go. The package is designed for engineering, simulation, robotics-adjacent, biomechanics, and spatial analytics workflows.
+It provides a focused set of tools for working with 3D vectors, geometric primitives, projections, distances, intersections, and rigid transforms in Go. The package is designed for engineering, simulation, robotics-adjacent workflows, biomechanics, and spatial analytics.
 
-It is intentionally small, explicit, and easy to use.
+The library is intentionally small, explicit, and easy to use.
 
 ## Features
 
@@ -29,7 +29,7 @@ It is intentionally small, explicit, and easy to use.
   - closest point on a segment
   - ray-plane intersection
   - segment-plane intersection
-  - ray-AABB intersection
+  - ray-AABB intersection with hit interval output (`hit`, `tMin`, `tMax`)
 - 3D rotations with `Mat3`
 - Rigid transforms with `Transform`
   - apply to points and vectors
@@ -52,7 +52,8 @@ Typical use cases include:
 
 ## Non-goals
 
-geom3d is not:
+`geom3d` is not:
+
 - a rendering engine
 - an OpenGL helper library
 - a physics engine
@@ -63,4 +64,84 @@ geom3d is not:
 
 ```bash
 go get github.com/motah-fard/geom3d
+```
 
+## Quick example
+
+```go
+package main
+
+import (
+    "fmt"
+
+    "github.com/motah-fard/geom3d"
+)
+
+func main() {
+    box := geom3d.AABB{
+        Min: geom3d.Vec3{X: 0, Y: 0, Z: 0},
+        Max: geom3d.Vec3{X: 2, Y: 2, Z: 2},
+    }
+
+    ray := geom3d.Ray3{
+        Origin: geom3d.Vec3{X: -1, Y: 1, Z: 1},
+        Dir:    geom3d.Vec3{X: 1, Y: 0, Z: 0},
+    }
+
+    hit, tMin, tMax := geom3d.IntersectRayAABB(ray, box)
+
+    fmt.Println("hit:", hit)
+    fmt.Println("tMin:", tMin)
+    fmt.Println("tMax:", tMax)
+}
+```
+
+## Package overview
+
+### Vectors
+`Vec3` supports common 3D vector operations such as addition, subtraction, scaling, dot products, cross products, norms, distances, and normalization.
+
+### Primitives
+The package includes practical 3D primitives for common geometric workflows:
+
+- `Ray3`
+- `Segment3`
+- `Plane`
+- `Triangle`
+- `AABB`
+
+### Matrices and transforms
+`Mat3` supports 3D rotation matrices and matrix operations.  
+`Transform` supports rigid-body transforms for points and vectors, transform composition, and inversion.
+
+### Geometric helpers
+The package includes helpers for:
+
+- point-to-plane distance
+- point projection to planes and lines
+- closest-point queries on segments
+- ray-plane intersection
+- segment-plane intersection
+- ray-AABB intersection
+
+## Examples
+
+Runnable examples are included under the `examples/` directory, including:
+
+- `basic_vectors`
+- `ray_plane`
+- `plane_projection`
+- `segment_closest_point`
+- `aabb_ray`
+- `triangle_normal`
+- `transform_point`
+
+## API stability
+
+`geom3d` is currently pre-v1.
+
+APIs may still be refined before the `v1.0.0` release. The goal of the pre-v1 releases is to stabilize naming, behavior, and package scope while keeping the package practical and easy to use.
+
+## License
+
+MIT

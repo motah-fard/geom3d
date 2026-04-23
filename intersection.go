@@ -61,10 +61,13 @@ func IntersectSegmentPlane(s Segment3, pl Plane) (Vec3, bool) {
 //
 // It uses the slab method. Touching the box counts as intersection.
 //
-// If the ray is invalid or the box is invalid, it returns false.
-func IntersectRayAABB(r Ray3, b AABB) bool {
+// It returns whether an intersection occurs, along with the entry and exit
+// ray parameters tMin and tMax.
+//
+// If the ray is invalid or the box is invalid, it returns false, 0, 0.
+func IntersectRayAABB(r Ray3, b AABB) (bool, float64, float64) {
 	if !r.IsValid() || !b.IsValid() {
-		return false
+		return false, 0, 0
 	}
 
 	tMin := 0.0
@@ -79,7 +82,7 @@ func IntersectRayAABB(r Ray3, b AABB) bool {
 		if AlmostZero(dir[i]) {
 			// Ray is parallel to slab. Origin must lie within slab.
 			if origin[i] < mins[i] || origin[i] > maxs[i] {
-				return false
+				return false, 0, 0
 			}
 			continue
 		}
@@ -99,9 +102,13 @@ func IntersectRayAABB(r Ray3, b AABB) bool {
 		}
 
 		if tMin > tMax {
-			return false
+			return false, 0, 0
 		}
 	}
 
-	return tMax >= 0
+	if tMax < 0 {
+		return false, 0, 0
+	}
+
+	return true, tMin, tMax
 }

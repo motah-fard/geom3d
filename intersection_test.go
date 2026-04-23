@@ -121,8 +121,12 @@ func TestIntersectRayAABBHit(t *testing.T) {
 		Max: Vec3{1, 1, 1},
 	}
 
-	if !IntersectRayAABB(r, b) {
+	hit, tMin, tMax := IntersectRayAABB(r, b)
+	if !hit {
 		t.Fatal("expected ray to intersect AABB")
+	}
+	if !AlmostEqual(tMin, 1) || !AlmostEqual(tMax, 2) {
+		t.Fatalf("IntersectRayAABB: got tMin=%v, tMax=%v, want 1 and 2", tMin, tMax)
 	}
 }
 
@@ -136,7 +140,8 @@ func TestIntersectRayAABBMiss(t *testing.T) {
 		Max: Vec3{1, 1, 1},
 	}
 
-	if IntersectRayAABB(r, b) {
+	hit, _, _ := IntersectRayAABB(r, b)
+	if hit {
 		t.Fatal("expected ray to miss AABB")
 	}
 }
@@ -151,8 +156,15 @@ func TestIntersectRayAABBStartsInside(t *testing.T) {
 		Max: Vec3{1, 1, 1},
 	}
 
-	if !IntersectRayAABB(r, b) {
+	hit, tMin, tMax := IntersectRayAABB(r, b)
+	if !hit {
 		t.Fatal("expected ray starting inside AABB to intersect")
+	}
+	if !AlmostEqual(tMin, 0) {
+		t.Fatalf("expected tMin = 0 for ray starting inside box, got %v", tMin)
+	}
+	if tMax <= 0 {
+		t.Fatalf("expected positive tMax for ray starting inside box, got %v", tMax)
 	}
 }
 
@@ -166,7 +178,8 @@ func TestIntersectRayAABBParallelOutside(t *testing.T) {
 		Max: Vec3{1, 1, 1},
 	}
 
-	if IntersectRayAABB(r, b) {
+	hit, _, _ := IntersectRayAABB(r, b)
+	if hit {
 		t.Fatal("expected parallel ray outside slab to miss AABB")
 	}
 }
@@ -189,6 +202,7 @@ func ExampleIntersectSegmentPlane() {
 	// true
 	// {0 0 5}
 }
+
 func ExampleIntersectRayAABB() {
 	box := AABB{
 		Min: Vec3{X: 0, Y: 0, Z: 0},
@@ -205,11 +219,14 @@ func ExampleIntersectRayAABB() {
 		Dir:    Vec3{X: 1, Y: 0, Z: 0},
 	}
 
-	fmt.Println(IntersectRayAABB(ray1, box))
-	fmt.Println(IntersectRayAABB(ray2, box))
+	hit1, tMin1, tMax1 := IntersectRayAABB(ray1, box)
+	hit2, _, _ := IntersectRayAABB(ray2, box)
+
+	fmt.Println(hit1, tMin1, tMax1)
+	fmt.Println(hit2)
 
 	// Output:
-	// true
+	// true 1 3
 	// false
 }
 
@@ -232,6 +249,7 @@ func ExampleIntersectRayPlane() {
 	// true
 	// {0 0 5}
 }
+
 func ExampleIntersectRayPlane_parallel() {
 	r := Ray3{
 		Origin: Vec3{X: 0, Y: 0, Z: 0},

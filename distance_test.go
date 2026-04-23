@@ -2,49 +2,8 @@ package geom3d
 
 import (
 	"fmt"
-	"math"
 	"testing"
 )
-
-func TestDistancePointToPlaneNegative(t *testing.T) {
-	pl := Plane{
-		Point:  Vec3{0, 0, 0},
-		Normal: Vec3{0, 0, 1},
-	}
-
-	p := Vec3{0, 0, -3}
-	got := DistancePointToPlane(p, pl)
-	want := -3.0
-
-	if !AlmostEqual(got, want) {
-		t.Fatalf("DistancePointToPlane negative: got %v, want %v", got, want)
-	}
-}
-
-func TestDistancePointToPlaneInvalidPlane(t *testing.T) {
-	pl := Plane{}
-	p := Vec3{1, 2, 3}
-
-	got := DistancePointToPlane(p, pl)
-	if !AlmostEqual(got, 0) {
-		t.Fatalf("DistancePointToPlane invalid plane: got %v, want 0", got)
-	}
-}
-
-func TestDistancePointToPlaneUnsignedExample(t *testing.T) {
-	pl := Plane{
-		Point:  Vec3{0, 0, 0},
-		Normal: Vec3{0, 0, 1},
-	}
-
-	p := Vec3{0, 0, -4}
-	got := math.Abs(DistancePointToPlane(p, pl))
-	want := 4.0
-
-	if !AlmostEqual(got, want) {
-		t.Fatalf("unsigned distance example: got %v, want %v", got, want)
-	}
-}
 
 func TestDistancePointToPlane(t *testing.T) {
 	pl := Plane{
@@ -84,13 +43,15 @@ func TestDistancePointToPlane(t *testing.T) {
 	}
 }
 
-func TestDistancePointToPlane_InvalidPlane(t *testing.T) {
+func TestDistancePointToPlaneInvalidPlane(t *testing.T) {
 	p := Vec3{X: 1, Y: 2, Z: 3}
 	got := DistancePointToPlane(p, Plane{})
+
 	if got != 0 {
 		t.Fatalf("DistancePointToPlane with invalid plane = %v, want 0", got)
 	}
 }
+
 func ExampleDistancePointToPlane() {
 	pl := Plane{
 		Point:  Vec3{X: 0, Y: 0, Z: 0},

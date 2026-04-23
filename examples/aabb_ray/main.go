@@ -22,9 +22,12 @@ func main() {
 		Dir:    geom3d.Vec3{X: 1, Y: 0, Z: 0},
 	}
 
+	hit1, tMin1, tMax1 := geom3d.IntersectRayAABB(ray1, box)
+	hit2, _, _ := geom3d.IntersectRayAABB(ray2, box)
+
 	fmt.Println("box center:", box.Center())
 	fmt.Println("box size:", box.Size())
 
-	fmt.Println("ray1 intersects box:", geom3d.IntersectRayAABB(ray1, box))
-	fmt.Println("ray2 intersects box:", geom3d.IntersectRayAABB(ray2, box))
+	fmt.Printf("ray1 hit=%v tMin=%.0f tMax=%.0f\n", hit1, tMin1, tMax1)
+	fmt.Printf("ray2 hit=%v\n", hit2)
 }
