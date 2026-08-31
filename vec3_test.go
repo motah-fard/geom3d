@@ -2,6 +2,7 @@ package geom3d
 
 import (
 	"fmt"
+	"math"
 	"testing"
 )
 
@@ -91,6 +92,134 @@ func TestVec3Midpoint(t *testing.T) {
 	}
 }
 
+func TestVec3Lerp(t *testing.T) {
+	a := Vec3{0, 0, 0}
+	b := Vec3{4, 8, -4}
+
+	if got, want := a.Lerp(b, 0), a; got != want {
+		t.Fatalf("Lerp t=0: got %#v, want %#v", got, want)
+	}
+	if got, want := a.Lerp(b, 1), b; got != want {
+		t.Fatalf("Lerp t=1: got %#v, want %#v", got, want)
+	}
+	if got, want := a.Lerp(b, 0.5), (Vec3{2, 4, -2}); got != want {
+		t.Fatalf("Lerp t=0.5: got %#v, want %#v", got, want)
+	}
+}
+
+func TestVec3Reflect(t *testing.T) {
+	a := Vec3{1, -1, 0}
+	n := Vec3{0, 1, 0}
+	got := a.Reflect(n)
+	want := Vec3{1, 1, 0}
+
+	if got != want {
+		t.Fatalf("Reflect: got %#v, want %#v", got, want)
+	}
+}
+
+func TestVec3Project(t *testing.T) {
+	a := Vec3{3, 4, 0}
+	b := Vec3{2, 0, 0}
+	got := a.Project(b)
+	want := Vec3{3, 0, 0}
+
+	if got != want {
+		t.Fatalf("Project: got %#v, want %#v", got, want)
+	}
+}
+
+func TestVec3ProjectOntoZero(t *testing.T) {
+	a := Vec3{3, 4, 0}
+	got := a.Project(Vec3{})
+	want := Vec3{}
+
+	if got != want {
+		t.Fatalf("Project onto zero vector: got %#v, want %#v", got, want)
+	}
+}
+
+func TestVec3Angle(t *testing.T) {
+	a := Vec3{1, 0, 0}
+	b := Vec3{0, 1, 0}
+	got := a.Angle(b)
+	want := math.Pi / 2
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("Angle: got %v, want %v", got, want)
+	}
+}
+
+func TestVec3AngleSameDirection(t *testing.T) {
+	a := Vec3{2, 0, 0}
+	b := Vec3{5, 0, 0}
+	got := a.Angle(b)
+
+	if !AlmostEqual(got, 0) {
+		t.Fatalf("Angle for parallel vectors: got %v, want 0", got)
+	}
+}
+
+func TestVec3AngleWithZeroVector(t *testing.T) {
+	a := Vec3{1, 0, 0}
+	got := a.Angle(Vec3{})
+
+	if !AlmostEqual(got, 0) {
+		t.Fatalf("Angle with zero vector: got %v, want 0", got)
+	}
+}
+
+func TestVec3ClampLength(t *testing.T) {
+	a := Vec3{3, 4, 0}
+	got := a.ClampLength(2)
+	want := Vec3{1.2, 1.6, 0}
+
+	if !AlmostEqual(got.X, want.X) || !AlmostEqual(got.Y, want.Y) || !AlmostEqual(got.Z, want.Z) {
+		t.Fatalf("ClampLength: got %#v, want %#v", got, want)
+	}
+}
+
+func TestVec3ClampLengthUnderLimit(t *testing.T) {
+	a := Vec3{1, 0, 0}
+	got := a.ClampLength(5)
+
+	if got != a {
+		t.Fatalf("ClampLength under limit: got %#v, want %#v", got, a)
+	}
+}
+
+func TestVec3Abs(t *testing.T) {
+	a := Vec3{-1, 2, -3}
+	got := a.Abs()
+	want := Vec3{1, 2, 3}
+
+	if got != want {
+		t.Fatalf("Abs: got %#v, want %#v", got, want)
+	}
+}
+
+func TestVec3Min(t *testing.T) {
+	a := Vec3{1, 5, -3}
+	b := Vec3{4, 2, -1}
+	got := a.Min(b)
+	want := Vec3{1, 2, -3}
+
+	if got != want {
+		t.Fatalf("Min: got %#v, want %#v", got, want)
+	}
+}
+
+func TestVec3Max(t *testing.T) {
+	a := Vec3{1, 5, -3}
+	b := Vec3{4, 2, -1}
+	got := a.Max(b)
+	want := Vec3{4, 5, -1}
+
+	if got != want {
+		t.Fatalf("Max: got %#v, want %#v", got, want)
+	}
+}
+
 func TestVec3Normalize(t *testing.T) {
 	a := Vec3{3, 0, 4}
 	got := a.Normalize()
@@ -161,6 +290,36 @@ func ExampleVec3_basicOperations() {
 	// 32
 	// -3 6 -3
 }
+func ExampleVec3_Lerp() {
+	a := Vec3{X: 0, Y: 0, Z: 0}
+	b := Vec3{X: 10, Y: 0, Z: 0}
+
+	fmt.Println(a.Lerp(b, 0.25))
+
+	// Output:
+	// {2.5 0 0}
+}
+
+func ExampleVec3_Reflect() {
+	incoming := Vec3{X: 1, Y: -1, Z: 0}
+	surfaceNormal := Vec3{X: 0, Y: 1, Z: 0}
+
+	fmt.Println(incoming.Reflect(surfaceNormal))
+
+	// Output:
+	// {1 1 0}
+}
+
+func ExampleVec3_ClampLength() {
+	v := Vec3{X: 3, Y: 4, Z: 0}
+	clamped := v.ClampLength(2)
+
+	fmt.Printf("%.2f %.2f %.2f\n", clamped.X, clamped.Y, clamped.Z)
+
+	// Output:
+	// 1.20 1.60 0.00
+}
+
 func ExampleVec3_Normalize() {
 	v := Vec3{X: 3, Y: 0, Z: 4}
 	u := v.Normalize()

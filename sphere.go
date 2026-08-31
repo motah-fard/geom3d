@@ -49,3 +49,14 @@ func (s Sphere) Contains(p Vec3) bool {
 	}
 	return p.Distance2(s.Center) <= s.Radius*s.Radius
 }
+
+// Overlaps reports whether s and other intersect or touch.
+//
+// If either sphere is invalid, it returns false.
+func (s Sphere) Overlaps(other Sphere) bool {
+	if !s.IsValid() || !other.IsValid() {
+		return false
+	}
+	r := s.Radius + other.Radius
+	return s.Center.Distance2(other.Center) <= r*r
+}

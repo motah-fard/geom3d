@@ -473,6 +473,244 @@ func TestIntersectRayTriangleDegenerate(t *testing.T) {
 	}
 }
 
+func TestIntersectSegmentTriangleHit(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+		C: Vec3{0, 4, 0},
+	}
+	s := Segment3{
+		A: Vec3{1, 1, 5},
+		B: Vec3{1, 1, -5},
+	}
+
+	got, ok := IntersectSegmentTriangle(s, tri)
+	want := Vec3{1, 1, 0}
+
+	if !ok {
+		t.Fatal("expected segment-triangle intersection")
+	}
+	if got != want {
+		t.Fatalf("IntersectSegmentTriangle: got %#v, want %#v", got, want)
+	}
+}
+
+func TestIntersectSegmentTriangleBeyondSegment(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+		C: Vec3{0, 4, 0},
+	}
+	// The triangle's plane is at z=0, but the segment stops at z=1,
+	// short of the plane.
+	s := Segment3{
+		A: Vec3{1, 1, 5},
+		B: Vec3{1, 1, 1},
+	}
+
+	_, ok := IntersectSegmentTriangle(s, tri)
+	if ok {
+		t.Fatal("expected no intersection when the triangle is beyond the segment's endpoint")
+	}
+}
+
+func TestIntersectSegmentTriangleMissOutsideEdge(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+		C: Vec3{0, 4, 0},
+	}
+	s := Segment3{
+		A: Vec3{5, 5, 5},
+		B: Vec3{5, 5, -5},
+	}
+
+	_, ok := IntersectSegmentTriangle(s, tri)
+	if ok {
+		t.Fatal("expected no intersection outside triangle bounds")
+	}
+}
+
+func TestIntersectSegmentTriangleDegenerate(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+		C: Vec3{4, 0, 0},
+	}
+	s := Segment3{A: Vec3{1, 1, 1}, B: Vec3{1, 1, 1}}
+
+	_, ok := IntersectSegmentTriangle(s, tri)
+	if ok {
+		t.Fatal("expected no intersection for degenerate segment")
+	}
+}
+
+func TestIntersectSegmentAABBHit(t *testing.T) {
+	b := AABB{Min: Vec3{0, 0, 0}, Max: Vec3{1, 1, 1}}
+	s := Segment3{A: Vec3{-1, 0.5, 0.5}, B: Vec3{2, 0.5, 0.5}}
+
+	hit, tMin, tMax := IntersectSegmentAABB(s, b)
+	if !hit {
+		t.Fatal("expected segment to intersect AABB")
+	}
+	// The full segment spans x in [-1, 2] (length 3); the box spans x in
+	// [0, 1], entered at t=1/3 and exited at t=2/3.
+	if !AlmostEqual(tMin, 1.0/3.0) || !AlmostEqual(tMax, 2.0/3.0) {
+		t.Fatalf("IntersectSegmentAABB: got tMin=%v, tMax=%v, want 1/3 and 2/3", tMin, tMax)
+	}
+}
+
+func TestIntersectSegmentAABBBeyondSegment(t *testing.T) {
+	b := AABB{Min: Vec3{5, 0, 0}, Max: Vec3{6, 1, 1}}
+	s := Segment3{A: Vec3{-1, 0.5, 0.5}, B: Vec3{1, 0.5, 0.5}}
+
+	hit, _, _ := IntersectSegmentAABB(s, b)
+	if hit {
+		t.Fatal("expected no intersection when the box is beyond the segment's endpoint")
+	}
+}
+
+func TestIntersectSegmentAABBMiss(t *testing.T) {
+	b := AABB{Min: Vec3{0, 0, 0}, Max: Vec3{1, 1, 1}}
+	s := Segment3{A: Vec3{-1, 2, 0.5}, B: Vec3{2, 2, 0.5}}
+
+	hit, _, _ := IntersectSegmentAABB(s, b)
+	if hit {
+		t.Fatal("expected segment to miss AABB")
+	}
+}
+
+func TestIntersectSegmentAABBDegenerate(t *testing.T) {
+	b := AABB{Min: Vec3{0, 0, 0}, Max: Vec3{1, 1, 1}}
+	s := Segment3{A: Vec3{0.5, 0.5, 0.5}, B: Vec3{0.5, 0.5, 0.5}}
+
+	hit, _, _ := IntersectSegmentAABB(s, b)
+	if hit {
+		t.Fatal("expected no intersection for degenerate segment")
+	}
+}
+
+func TestIntersectSegmentSphereHit(t *testing.T) {
+	sph := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+	s := Segment3{A: Vec3{-5, 0, 0}, B: Vec3{5, 0, 0}}
+
+	hit, tMin, tMax := IntersectSegmentSphere(s, sph)
+	if !hit {
+		t.Fatal("expected segment to intersect sphere")
+	}
+	// The full segment spans x in [-5, 5] (length 10); the sphere is
+	// entered at x=-2 (t=0.3) and exited at x=2 (t=0.7).
+	if !AlmostEqual(tMin, 0.3) || !AlmostEqual(tMax, 0.7) {
+		t.Fatalf("IntersectSegmentSphere: got tMin=%v, tMax=%v, want 0.3 and 0.7", tMin, tMax)
+	}
+}
+
+func TestIntersectSegmentSphereBeyondSegment(t *testing.T) {
+	sph := Sphere{Center: Vec3{10, 0, 0}, Radius: 2}
+	s := Segment3{A: Vec3{-5, 0, 0}, B: Vec3{5, 0, 0}}
+
+	hit, _, _ := IntersectSegmentSphere(s, sph)
+	if hit {
+		t.Fatal("expected no intersection when the sphere is beyond the segment's endpoint")
+	}
+}
+
+func TestIntersectSegmentSphereMiss(t *testing.T) {
+	sph := Sphere{Center: Vec3{0, 5, 0}, Radius: 2}
+	s := Segment3{A: Vec3{-5, 0, 0}, B: Vec3{5, 0, 0}}
+
+	hit, _, _ := IntersectSegmentSphere(s, sph)
+	if hit {
+		t.Fatal("expected segment to miss sphere")
+	}
+}
+
+func TestIntersectAABBSphereOverlap(t *testing.T) {
+	b := AABB{Min: Vec3{0, 0, 0}, Max: Vec3{1, 1, 1}}
+	s := Sphere{Center: Vec3{2, 0.5, 0.5}, Radius: 1.5}
+
+	if !IntersectAABBSphere(b, s) {
+		t.Fatal("expected AABB and sphere to overlap")
+	}
+}
+
+func TestIntersectAABBSphereMiss(t *testing.T) {
+	b := AABB{Min: Vec3{0, 0, 0}, Max: Vec3{1, 1, 1}}
+	s := Sphere{Center: Vec3{10, 0.5, 0.5}, Radius: 1}
+
+	if IntersectAABBSphere(b, s) {
+		t.Fatal("expected AABB and sphere not to overlap")
+	}
+}
+
+func TestIntersectAABBSphereInvalid(t *testing.T) {
+	badBox := AABB{Min: Vec3{1, 1, 1}, Max: Vec3{0, 0, 0}}
+	s := Sphere{Center: Vec3{0.5, 0.5, 0.5}, Radius: 1}
+
+	if IntersectAABBSphere(badBox, s) {
+		t.Fatal("expected false for invalid AABB")
+	}
+
+	box := AABB{Min: Vec3{0, 0, 0}, Max: Vec3{1, 1, 1}}
+	badSphere := Sphere{Center: Vec3{0.5, 0.5, 0.5}, Radius: -1}
+
+	if IntersectAABBSphere(box, badSphere) {
+		t.Fatal("expected false for invalid sphere")
+	}
+}
+
+func ExampleIntersectSegmentTriangle() {
+	tri := Triangle{
+		A: Vec3{X: 0, Y: 0, Z: 0},
+		B: Vec3{X: 4, Y: 0, Z: 0},
+		C: Vec3{X: 0, Y: 4, Z: 0},
+	}
+	s := Segment3{
+		A: Vec3{X: 1, Y: 1, Z: 5},
+		B: Vec3{X: 1, Y: 1, Z: -5},
+	}
+
+	p, ok := IntersectSegmentTriangle(s, tri)
+	fmt.Println(ok)
+	fmt.Println(p)
+
+	// Output:
+	// true
+	// {1 1 0}
+}
+
+func ExampleIntersectAABBSphere() {
+	b := AABB{Min: Vec3{X: 0, Y: 0, Z: 0}, Max: Vec3{X: 1, Y: 1, Z: 1}}
+	s := Sphere{Center: Vec3{X: 2, Y: 0.5, Z: 0.5}, Radius: 1.5}
+
+	fmt.Println(IntersectAABBSphere(b, s))
+
+	// Output:
+	// true
+}
+
+func ExampleIntersectSegmentAABB() {
+	b := AABB{Min: Vec3{X: 0, Y: 0, Z: 0}, Max: Vec3{X: 1, Y: 1, Z: 1}}
+	s := Segment3{A: Vec3{X: -1, Y: 0.5, Z: 0.5}, B: Vec3{X: 2, Y: 0.5, Z: 0.5}}
+
+	hit, tMin, tMax := IntersectSegmentAABB(s, b)
+	fmt.Println(hit, tMin, tMax)
+
+	// Output:
+	// true 0.3333333333333333 0.6666666666666666
+}
+
+func ExampleIntersectSegmentSphere() {
+	sph := Sphere{Center: Vec3{X: 0, Y: 0, Z: 0}, Radius: 2}
+	s := Segment3{A: Vec3{X: -5, Y: 0, Z: 0}, B: Vec3{X: 5, Y: 0, Z: 0}}
+
+	hit, tMin, tMax := IntersectSegmentSphere(s, sph)
+	fmt.Println(hit, tMin, tMax)
+
+	// Output:
+	// true 0.3 0.7
+}
+
 func ExampleIntersectSegmentPlane() {
 	s := Segment3{
 		A: Vec3{0, 0, 0},

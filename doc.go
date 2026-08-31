@@ -10,13 +10,17 @@
 // analytics workflows rather than rendering, physics engines, or CAD kernels.
 //
 // Core features:
-//   - Vec3 operations: dot, cross, norm, normalization, distances, midpoints
+//   - Vec3 operations: dot, cross, norm, normalization, distances, midpoints,
+//     lerp, reflect, projection, angle, length clamping, component-wise
+//     abs/min/max
 //   - Geometry primitives: Ray3, Segment3, Plane, Triangle, AABB, Sphere
 //   - Practical operations: projection, barycentric coordinates, closest-point
 //     queries, signed distance, segment-segment queries, ray queries,
 //     box queries, sphere queries, ray-plane intersection, ray-triangle
 //     intersection, ray-sphere intersection, segment-plane intersection,
-//     and ray-AABB intersection
+//     segment-triangle intersection, bounded segment-AABB and
+//     segment-sphere raycasts, ray-AABB intersection, AABB-sphere and
+//     sphere-sphere intersection, and AABB construction/union/expansion
 //   - Rigid transforms: Mat3 rotations and Transform composition/inversion
 //
 // Non-goals:

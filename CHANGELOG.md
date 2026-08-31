@@ -13,8 +13,15 @@ All notable changes to this project will be documented in this file.
 - Added `CONTRIBUTING.md`, issue templates, and a pull request template
 - Added `Vec3.Midpoint`
 - Added a README "Error handling" section documenting the library's invalid-input contract
+- Added `Vec3.Lerp`, `Vec3.Reflect`, `Vec3.Project`, `Vec3.Angle`, `Vec3.ClampLength`, `Vec3.Abs`, `Vec3.Min`, and `Vec3.Max`
+- Added `AABBFromPoints`, `AABB.Union`, `AABB.ExpandToInclude`, `AABB.Expand`, `AABB.Volume`, and `AABB.SurfaceArea`
+- Added `Sphere.Overlaps` and `DistanceBetweenSpheres`
+- Added `IntersectAABBSphere`
+- Added `IntersectSegmentTriangle`, `IntersectSegmentAABB`, and `IntersectSegmentSphere` (bounded raycasts for finite segments, mirroring the existing `Ray3` intersection tests)
+- Added `examples/aabb_from_points`, `examples/segment_bounded_raycast`, and `examples/sphere_sphere`
 
 ### Improved
+- `IntersectRayTriangle` now shares its Möller–Trumbore implementation with the new `IntersectSegmentTriangle` via a private `intersectLineTriangle` helper, instead of each duplicating the algorithm
 - `Segment3.Midpoint` and `AABB.Center` now delegate to `Vec3.Midpoint` instead of duplicating the averaging logic
 - Removed a duplicate clamp implementation in `closest.go` (`ClosestPointOnAABB` now shares the same `clamp` helper as `clamp01`)
 - `SegmentsOverlap` now uses `math.Abs`/`math.Max`/`math.Min` instead of manual comparisons

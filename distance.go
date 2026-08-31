@@ -1,5 +1,7 @@
 package geom3d
 
+import "math"
+
 // DistancePointToPlane returns the signed perpendicular distance from point p
 // to plane pl.
 //
@@ -92,4 +94,18 @@ func DistancePointToAABB(p Vec3, b AABB) float64 {
 
 	cp := ClosestPointOnAABB(p, b)
 	return p.Distance(cp)
+}
+
+// DistanceBetweenSpheres returns the Euclidean distance between the surfaces
+// of solid spheres s1 and s2.
+//
+// If the spheres overlap or touch, it returns 0.
+//
+// If either sphere is invalid, it returns 0.
+func DistanceBetweenSpheres(s1, s2 Sphere) float64 {
+	if !s1.IsValid() || !s2.IsValid() {
+		return 0
+	}
+
+	return math.Max(0, s1.Center.Distance(s2.Center)-s1.Radius-s2.Radius)
 }

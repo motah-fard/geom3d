@@ -27,6 +27,8 @@ The library is intentionally small, explicit, and easy to use.
   - cross product
   - norm and normalization
   - distance calculations
+  - lerp, reflect, vector projection, angle between vectors, length clamping
+  - component-wise abs/min/max
   - projections onto planes and lines
   - closest point on a ray, segment, triangle, AABB, and sphere
   - closest points between segments
@@ -34,11 +36,15 @@ The library is intentionally small, explicit, and easy to use.
   - ray-triangle intersection
   - ray-sphere intersection with hit interval output (`hit`, `tMin`, `tMax`)
   - segment-plane intersection
+  - segment-triangle intersection
+  - segment-AABB and segment-sphere intersection with hit interval output (bounded raycasts)
   - segment-segment intersection at a single point
   - collinear segment overlap detection
   - ray-AABB intersection with hit interval output (`hit`, `tMin`, `tMax`)
+  - AABB-sphere and sphere-sphere intersection
+  - AABB construction from a point set, union, margin expansion, volume, and surface area
   - barycentric coordinates
-  - point-to-ray, point-to-segment, point-to-line, point-to-triangle, point-to-AABB, point-to-sphere, and segment-to-segment distance queries
+  - point-to-ray, point-to-segment, point-to-line, point-to-triangle, point-to-AABB, point-to-sphere, sphere-to-sphere, and segment-to-segment distance queries
 - 3D rotations with `Mat3`
 - Rigid transforms with `Transform`
   - apply to points and vectors
@@ -57,6 +63,8 @@ Typical use cases include:
 - finding the closest point on a ray, segment, triangle, bounding box, or sphere
 - computing closest points or minimum distance between segments
 - checking ray intersections with planes, triangles, bounding boxes, or spheres
+- bounded raycasts against a triangle, box, or sphere using a finite `Segment3` instead of an infinite `Ray3`
+- building an AABB around a point cloud and testing it against other boxes or spheres
 - testing whether two segments intersect at a single point or overlap collinearly
 - computing barycentric coordinates for triangle-based workflows
 - applying and composing rigid transforms
@@ -111,7 +119,7 @@ func main() {
 ## Package overview
 
 ### Vectors
-`Vec3` supports common 3D vector operations such as addition, subtraction, scaling, dot products, cross products, norms, distances, midpoints, and normalization.
+`Vec3` supports common 3D vector operations such as addition, subtraction, scaling, dot products, cross products, norms, distances, midpoints, normalization, linear interpolation (`Lerp`), reflection, vector-onto-vector projection, angle between vectors, length clamping, and component-wise `Abs`/`Min`/`Max`.
 
 ### Primitives
 The package includes practical 3D primitives for common geometric workflows:
@@ -137,6 +145,7 @@ The package includes helpers for:
 - point-to-triangle distance
 - point-to-AABB distance
 - point-to-sphere distance
+- sphere-to-sphere distance
 - segment-to-segment distance
 - point projection to planes and lines
 - barycentric coordinates
@@ -146,9 +155,15 @@ The package includes helpers for:
 - ray-triangle intersection
 - ray-sphere intersection
 - segment-plane intersection
+- segment-triangle intersection
+- segment-AABB intersection (bounded raycast)
+- segment-sphere intersection (bounded raycast)
 - segment-segment intersection
 - collinear segment overlap detection
 - ray-AABB intersection
+- AABB-sphere intersection
+- sphere-sphere intersection
+- `AABBFromPoints`, `AABB.Union`, `AABB.ExpandToInclude`, `AABB.Expand`, `AABB.Volume`, `AABB.SurfaceArea`
 
 ## Error handling
 
@@ -195,6 +210,10 @@ have intentionally specific semantics worth calling out:
 - `ClosestPointOnSphere` and `DistancePointToSphere` treat `Sphere` as a solid ball: a point inside the sphere returns itself (distance `0`), matching `ClosestPointOnAABB`'s behavior for points inside a box.
 - `ClosestPointOnRay` clamps to the ray origin when the orthogonal projection falls behind the origin.
 - `ClosestPointOnAABB` returns the input point itself when the point lies inside the box.
+- `IntersectSegmentAABB`, `IntersectSegmentSphere`, and `IntersectSegmentTriangle` mirror their `Ray3` counterparts but bound the hit interval to the segment's own length (`t` in `[0, 1]`, where `0` is `s.A` and `1` is `s.B`); a shape the infinite ray would hit is correctly reported as a miss if it lies beyond the segment's endpoint.
+- `AABBFromPoints` returns `AABB{}` for an empty slice, rather than a sentinel error — check `len(points) == 0` yourself first if that distinction matters to you.
+- `AABB.Union`, `AABB.ExpandToInclude`, and `AABB.Expand` compute their result component-wise without checking `IsValid()` first, matching `AABB.Overlaps`'s existing convention; feeding them an invalid box propagates that invalidity into the result rather than silently discarding it.
+- `Sphere.Overlaps` and `IntersectAABBSphere` treat touching shapes (distance exactly equal to the combined radius) as overlapping, matching `AABB.Overlaps`'s inclusive-boundary convention.
 
 ## Examples
 
@@ -215,6 +234,9 @@ Runnable examples are included under the `examples/` directory, including:
 - `aabb_distance`
 - `sphere_closest_point`
 - `sphere_ray`
+- `sphere_sphere`
+- `aabb_from_points`
+- `segment_bounded_raycast`
 - `triangle_normal`
 - `triangle_closest_point`
 - `triangle_barycentric`

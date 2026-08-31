@@ -471,6 +471,51 @@ func ExampleDistancePointToSphere() {
 	// 2
 }
 
+func TestDistanceBetweenSpheresDisjoint(t *testing.T) {
+	a := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+	b := Sphere{Center: Vec3{10, 0, 0}, Radius: 3}
+
+	got := DistanceBetweenSpheres(a, b)
+	want := 5.0 // 10 - 2 - 3
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistanceBetweenSpheres: got %v, want %v", got, want)
+	}
+}
+
+func TestDistanceBetweenSpheresOverlapping(t *testing.T) {
+	a := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+	b := Sphere{Center: Vec3{3, 0, 0}, Radius: 2}
+
+	got := DistanceBetweenSpheres(a, b)
+	want := 0.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistanceBetweenSpheres overlapping: got %v, want %v", got, want)
+	}
+}
+
+func TestDistanceBetweenSpheresInvalid(t *testing.T) {
+	a := Sphere{Center: Vec3{0, 0, 0}, Radius: -1}
+	b := Sphere{Center: Vec3{10, 0, 0}, Radius: 2}
+
+	got := DistanceBetweenSpheres(a, b)
+
+	if got != 0 {
+		t.Fatalf("DistanceBetweenSpheres invalid: got %v, want 0", got)
+	}
+}
+
+func ExampleDistanceBetweenSpheres() {
+	a := Sphere{Center: Vec3{X: 0, Y: 0, Z: 0}, Radius: 2}
+	b := Sphere{Center: Vec3{X: 10, Y: 0, Z: 0}, Radius: 3}
+
+	fmt.Println(DistanceBetweenSpheres(a, b))
+
+	// Output:
+	// 5
+}
+
 func ExampleDistancePointToPlane() {
 	pl := Plane{
 		Point:  Vec3{X: 0, Y: 0, Z: 0},

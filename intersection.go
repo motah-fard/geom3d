@@ -171,36 +171,127 @@ func IntersectRayTriangle(r Ray3, tri Triangle) (Vec3, bool) {
 		return Vec3{}, false
 	}
 
+	p, _, ok := intersectLineTriangle(r.Origin, r.Dir, tri, math.Inf(1))
+	return p, ok
+}
+
+// IntersectSegmentTriangle computes the intersection point between segment s
+// and triangle tri, using the same Möller–Trumbore test as
+// IntersectRayTriangle but bounded to the segment's own length.
+//
+// It returns the intersection point and true if the segment intersects the
+// triangle at parameter t in [0, 1]. As with IntersectRayTriangle, either
+// face of the triangle counts as a hit.
+//
+// If the segment is degenerate, the triangle is degenerate, the segment is
+// parallel to the triangle's plane, or the intersection lies outside the
+// triangle or outside the segment, it returns Vec3{} and false.
+func IntersectSegmentTriangle(s Segment3, tri Triangle) (Vec3, bool) {
+	if s.IsDegenerate() || tri.IsDegenerate() {
+		return Vec3{}, false
+	}
+
+	p, _, ok := intersectLineTriangle(s.A, s.Direction(), tri, 1)
+	return p, ok
+}
+
+// intersectLineTriangle implements the Möller–Trumbore ray/triangle
+// intersection test for the parametric line origin + t*dir, accepting any
+// hit with 0 <= t <= maxT. IntersectRayTriangle and IntersectSegmentTriangle
+// are thin wrappers around this shared implementation, differing only in
+// maxT (unbounded for a ray, 1 for a segment).
+func intersectLineTriangle(origin, dir Vec3, tri Triangle, maxT float64) (Vec3, float64, bool) {
 	edge1 := tri.EdgeAB()
 	edge2 := tri.EdgeAC()
 
-	pvec := r.Dir.Cross(edge2)
+	pvec := dir.Cross(edge2)
 	det := edge1.Dot(pvec)
 
 	if AlmostZero(det) {
-		return Vec3{}, false
+		return Vec3{}, 0, false
 	}
 
 	invDet := 1 / det
-	tvec := r.Origin.Sub(tri.A)
+	tvec := origin.Sub(tri.A)
 
 	u := tvec.Dot(pvec) * invDet
 	if u < 0 || u > 1 {
-		return Vec3{}, false
+		return Vec3{}, 0, false
 	}
 
 	qvec := tvec.Cross(edge1)
-	v := r.Dir.Dot(qvec) * invDet
+	v := dir.Dot(qvec) * invDet
 	if v < 0 || u+v > 1 {
-		return Vec3{}, false
+		return Vec3{}, 0, false
 	}
 
 	t := edge2.Dot(qvec) * invDet
-	if t < 0 {
-		return Vec3{}, false
+	if t < 0 || t > maxT {
+		return Vec3{}, 0, false
 	}
 
-	return r.PointAt(t), true
+	return origin.Add(dir.Scale(t)), t, true
+}
+
+// IntersectAABBSphere reports whether axis-aligned bounding box b and sphere
+// s intersect or touch.
+//
+// If either shape is invalid, it returns false.
+func IntersectAABBSphere(b AABB, s Sphere) bool {
+	if !b.IsValid() || !s.IsValid() {
+		return false
+	}
+	return DistancePointToAABB(s.Center, b) <= s.Radius
+}
+
+// IntersectSegmentAABB reports whether segment s intersects axis-aligned
+// bounding box b, using the same slab method as IntersectRayAABB but bounded
+// to the segment's own length.
+//
+// It returns whether an intersection occurs, along with the entry and exit
+// parameters tMin and tMax along the segment (0 at s.A, 1 at s.B).
+//
+// If the segment is degenerate, the box is invalid, or the box lies beyond
+// s.B, it returns false, 0, 0.
+func IntersectSegmentAABB(s Segment3, b AABB) (bool, float64, float64) {
+	if s.IsDegenerate() || !b.IsValid() {
+		return false, 0, 0
+	}
+
+	hit, tMin, tMax := IntersectRayAABB(Ray3{Origin: s.A, Dir: s.Direction()}, b)
+	if !hit || tMin > 1 {
+		return false, 0, 0
+	}
+	if tMax > 1 {
+		tMax = 1
+	}
+
+	return true, tMin, tMax
+}
+
+// IntersectSegmentSphere reports whether segment s intersects sphere sph,
+// using the same quadratic test as IntersectRaySphere but bounded to the
+// segment's own length.
+//
+// It returns whether an intersection occurs, along with the entry and exit
+// parameters tMin and tMax along the segment (0 at s.A, 1 at s.B).
+//
+// If the segment is degenerate, the sphere is invalid, or the sphere lies
+// beyond s.B, it returns false, 0, 0.
+func IntersectSegmentSphere(s Segment3, sph Sphere) (bool, float64, float64) {
+	if s.IsDegenerate() || !sph.IsValid() {
+		return false, 0, 0
+	}
+
+	hit, tMin, tMax := IntersectRaySphere(Ray3{Origin: s.A, Dir: s.Direction()}, sph)
+	if !hit || tMin > 1 {
+		return false, 0, 0
+	}
+	if tMax > 1 {
+		tMax = 1
+	}
+
+	return true, tMin, tMax
 }
 
 // IntersectSegments reports whether segments s1 and s2 intersect at a single point.

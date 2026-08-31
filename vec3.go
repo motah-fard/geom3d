@@ -82,3 +82,85 @@ func (a Vec3) Normalize() Vec3 {
 	}
 	return a.Scale(1 / n)
 }
+
+// Lerp returns the point that is linearly interpolated between a and b by
+// fraction t, where t = 0 returns a and t = 1 returns b.
+//
+// t is not clamped to [0, 1]; values outside that range extrapolate.
+func (a Vec3) Lerp(b Vec3, t float64) Vec3 {
+	return a.Add(b.Sub(a).Scale(t))
+}
+
+// Reflect returns a reflected about the plane through the origin with unit
+// normal n, as if n were a surface normal and a an incoming direction.
+//
+// n is assumed to be normalized; if it is not, the result is scaled
+// accordingly.
+func (a Vec3) Reflect(n Vec3) Vec3 {
+	return a.Sub(n.Scale(2 * a.Dot(n)))
+}
+
+// Project returns the vector projection of a onto b: the component of a
+// that lies in the direction of b.
+//
+// If b is the zero vector, it returns Vec3{}.
+func (a Vec3) Project(b Vec3) Vec3 {
+	denom := b.Norm2()
+	if AlmostZero(denom) {
+		return Vec3{}
+	}
+	return b.Scale(a.Dot(b) / denom)
+}
+
+// Angle returns the unsigned angle, in radians, between a and b.
+//
+// If either vector is the zero vector, it returns 0.
+func (a Vec3) Angle(b Vec3) float64 {
+	denom := a.Norm() * b.Norm()
+	if AlmostZero(denom) {
+		return 0
+	}
+	cos := a.Dot(b) / denom
+	// Guard against floating-point drift pushing cos slightly outside
+	// [-1, 1], which would make math.Acos return NaN.
+	cos = clamp(cos, -1, 1)
+	return math.Acos(cos)
+}
+
+// ClampLength returns a scaled down to have norm at most max.
+//
+// If a's norm is already less than or equal to max, it returns a unchanged.
+func (a Vec3) ClampLength(max float64) Vec3 {
+	n := a.Norm()
+	if n <= max {
+		return a
+	}
+	return a.Scale(max / n)
+}
+
+// Abs returns the component-wise absolute value of a.
+func (a Vec3) Abs() Vec3 {
+	return Vec3{
+		X: math.Abs(a.X),
+		Y: math.Abs(a.Y),
+		Z: math.Abs(a.Z),
+	}
+}
+
+// Min returns the component-wise minimum of a and b.
+func (a Vec3) Min(b Vec3) Vec3 {
+	return Vec3{
+		X: math.Min(a.X, b.X),
+		Y: math.Min(a.Y, b.Y),
+		Z: math.Min(a.Z, b.Z),
+	}
+}
+
+// Max returns the component-wise maximum of a and b.
+func (a Vec3) Max(b Vec3) Vec3 {
+	return Vec3{
+		X: math.Max(a.X, b.X),
+		Y: math.Max(a.Y, b.Y),
+		Z: math.Max(a.Z, b.Z),
+	}
+}

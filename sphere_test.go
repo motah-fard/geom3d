@@ -75,6 +75,33 @@ func TestSphereContains(t *testing.T) {
 	}
 }
 
+func TestSphereOverlaps(t *testing.T) {
+	a := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+	b := Sphere{Center: Vec3{3, 0, 0}, Radius: 2}
+	c := Sphere{Center: Vec3{10, 0, 0}, Radius: 2}
+
+	if !a.Overlaps(b) {
+		t.Fatal("expected overlapping spheres")
+	}
+	if a.Overlaps(c) {
+		t.Fatal("expected non-overlapping spheres")
+	}
+
+	bad := Sphere{Center: Vec3{0, 0, 0}, Radius: -1}
+	if bad.Overlaps(a) {
+		t.Fatal("expected Overlaps to be false for invalid sphere")
+	}
+}
+
+func TestSphereOverlapsTouching(t *testing.T) {
+	a := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+	b := Sphere{Center: Vec3{4, 0, 0}, Radius: 2}
+
+	if !a.Overlaps(b) {
+		t.Fatal("expected touching spheres to count as overlapping")
+	}
+}
+
 func ExampleSphere_Volume() {
 	s := Sphere{Center: Vec3{X: 0, Y: 0, Z: 0}, Radius: 1}
 	fmt.Printf("%.4f\n", s.Volume())

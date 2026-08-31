@@ -47,6 +47,10 @@
 - DistancePointToSphere
 - IntersectRaySphere
 - Vec3.Midpoint
+- Vec3.Lerp, Vec3.Reflect, Vec3.Project, Vec3.Angle, Vec3.ClampLength, Vec3.Abs, Vec3.Min, Vec3.Max
+- AABBFromPoints, AABB.Union, AABB.ExpandToInclude, AABB.Expand, AABB.Volume, AABB.SurfaceArea
+- Sphere.Overlaps, DistanceBetweenSpheres, IntersectAABBSphere
+- IntersectSegmentTriangle, IntersectSegmentAABB, IntersectSegmentSphere
 
 ## Review later
 - Whether additional projection helpers should be added to match `ProjectPointToLine`
@@ -56,14 +60,18 @@
 - Whether invalid-input reporting (currently a documented zero-value fallback, see README's "Error handling" section) should become a `(value, bool)` return uniformly across all queries — this would require a `v2`, since it changes existing signatures
 
 ## Current API direction
-- Keep primitive object behavior as methods
-  - `Vec3.Norm`
-  - `Vec3.Midpoint`
+- Keep primitive object behavior as methods, including same-type relations
+  (e.g. `AABB.Overlaps`, `Sphere.Overlaps`) and derived-value conversions
+  (e.g. `Triangle.Normal`, `Plane.UnitNormal`) on the receiver's own type
+  - `Vec3.Norm`, `Vec3.Midpoint`, `Vec3.Lerp`, `Vec3.Reflect`, `Vec3.Project`, `Vec3.Angle`, `Vec3.ClampLength`, `Vec3.Abs`, `Vec3.Min`, `Vec3.Max`
   - `Segment3.Length`
   - `Triangle.Area`
   - `Plane.UnitNormal`
+  - `AABB.Overlaps`, `AABB.Union`, `AABB.ExpandToInclude`, `AABB.Expand`, `AABB.Volume`, `AABB.SurfaceArea`
+  - `Sphere.Overlaps`
 
-- Keep geometric relations between multiple objects as free functions
+- Keep geometric relations between different primitive types, and
+  multi-object constructors, as free functions
   - `DistancePointToPlane`
   - `DistancePointToRay`
   - `DistancePointToSegment`
@@ -72,6 +80,7 @@
   - `DistancePointToAABB`
   - `DistancePointToSphere`
   - `DistanceBetweenSegments`
+  - `DistanceBetweenSpheres`
   - `ProjectPointToPlane`
   - `ProjectPointToLine`
   - `BarycentricCoordinates`
@@ -85,8 +94,13 @@
   - `IntersectRayTriangle`
   - `IntersectRaySphere`
   - `IntersectSegmentPlane`
+  - `IntersectSegmentTriangle`
+  - `IntersectSegmentAABB`
+  - `IntersectSegmentSphere`
   - `IntersectSegments`
+  - `IntersectAABBSphere`
   - `SegmentsOverlap`
+  - `AABBFromPoints`
 
 ## Notes toward v1.0.0 (historical)
 The public API is now more coherent and practically useful than in early releases.
