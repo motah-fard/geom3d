@@ -24,6 +24,11 @@ All notable changes to this project will be documented in this file.
 - Added `Mat3.ToQuaternion`
 - Added `OBB` (oriented bounding box) with `IsValid`, `Volume`, `SurfaceArea`, and `Contains`, plus `ClosestPointOnOBB` and `DistancePointToOBB`
 - Added `examples/quaternion_rotation` and `examples/obb_closest_point`
+- Added `Capsule` with `IsValid`, `IsDegenerate`, `Segment`, `Volume`, `SurfaceArea`, and `Contains`, plus `ClosestPointOnCapsule` and `DistancePointToCapsule`
+- Added `Line3` (infinite line) with `PointAt` and `IsValid`
+- Added `IntersectLinePlane`, `IntersectPlanePlane`, `ClosestPointsBetweenLines`, and `DistanceBetweenLines`
+- Added `Triangle.Overlaps`, including a 2D separating-axis test for the coplanar case (partial overlap or full containment), alongside the general non-coplanar edge-crossing test
+- Added `examples/capsule_closest_point`, `examples/plane_plane_intersection`, and `examples/triangle_overlap`
 
 ### Improved
 - `IntersectRayTriangle` now shares its Möller–Trumbore implementation with the new `IntersectSegmentTriangle` via a private `intersectLineTriangle` helper, instead of each duplicating the algorithm
@@ -32,6 +37,7 @@ All notable changes to this project will be documented in this file.
 - `SegmentsOverlap` now uses `math.Abs`/`math.Max`/`math.Min` instead of manual comparisons
 - Corrected the README and API_AUDIT.md, which still described the library as "approaching v1.0.0" after v1.0.0 had already shipped
 - CI now only runs the race detector on Linux and macOS, since `-race` requires cgo and a C compiler that isn't guaranteed to be preconfigured on the windows-latest runner
+- Moved `ClosestPointOnOBB` and `ClosestPointOnCapsule` into `closest.go`, and `DistancePointToCapsule` into `distance.go`, for consistency with every other `ClosestPointOnX`/`DistancePointToX` free function living in those two files rather than the primitive's own file
 
 ## [v0.5.0]
 ### Added

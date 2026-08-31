@@ -65,24 +65,3 @@ func (b OBB) toLocal(p Vec3) Vec3 {
 func (b OBB) toWorld(local Vec3) Vec3 {
 	return b.Orientation.MulVec(local).Add(b.Center)
 }
-
-// ClosestPointOnOBB returns the closest point on or in solid box b to
-// point p.
-//
-// If p lies inside the box, it returns p.
-//
-// If the box is invalid, it returns Vec3{}.
-func ClosestPointOnOBB(p Vec3, b OBB) Vec3 {
-	if !b.IsValid() {
-		return Vec3{}
-	}
-
-	local := b.toLocal(p)
-	clamped := Vec3{
-		X: clamp(local.X, -b.HalfExtents.X, b.HalfExtents.X),
-		Y: clamp(local.Y, -b.HalfExtents.Y, b.HalfExtents.Y),
-		Z: clamp(local.Z, -b.HalfExtents.Z, b.HalfExtents.Z),
-	}
-
-	return b.toWorld(clamped)
-}

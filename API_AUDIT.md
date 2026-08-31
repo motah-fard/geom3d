@@ -9,6 +9,8 @@
 - AABB
 - Sphere
 - OBB
+- Capsule
+- Line3
 - Mat3
 - Quaternion
 - Transform
@@ -56,13 +58,17 @@
 - Mat3.Determinant, Mat3.Inverse, Mat3.ToQuaternion
 - Quaternion, IdentityQuaternion, QuaternionFromAxisAngle
 - OBB, ClosestPointOnOBB, DistancePointToOBB
+- Capsule, ClosestPointOnCapsule, DistancePointToCapsule
+- Line3, IntersectLinePlane, IntersectPlanePlane, ClosestPointsBetweenLines, DistanceBetweenLines
+- Triangle.Overlaps
 
 ## Review later
 - Whether additional projection helpers should be added to match `ProjectPointToLine`
-- Whether more closest-point helpers should be added for line-line queries
 - Whether future intersection helpers should return richer result types or tuples
 - Whether overlapping collinear segment behavior should eventually have a richer relation helper
 - Whether invalid-input reporting (currently a documented zero-value fallback, see README's "Error handling" section) should become a `(value, bool)` return uniformly across all queries — this would require a `v2`, since it changes existing signatures
+- Ray-OBB and ray-capsule intersection are natural follow-ups to `IntersectRayAABB`/`IntersectRaySphere` but aren't implemented yet
+- AABB-OBB, OBB-OBB, and capsule-capsule intersection/overlap tests aren't implemented yet
 
 ## Current API direction
 - Keep primitive object behavior as methods, including same-type relations
@@ -75,6 +81,9 @@
   - `AABB.Overlaps`, `AABB.Union`, `AABB.ExpandToInclude`, `AABB.Expand`, `AABB.Volume`, `AABB.SurfaceArea`
   - `Sphere.Overlaps`
   - `OBB.IsValid`, `OBB.Volume`, `OBB.SurfaceArea`, `OBB.Contains`
+  - `Capsule.IsValid`, `Capsule.IsDegenerate`, `Capsule.Segment`, `Capsule.Volume`, `Capsule.SurfaceArea`, `Capsule.Contains`
+  - `Line3.PointAt`, `Line3.IsValid`
+  - `Triangle.Overlaps`
   - `Mat3.Determinant`, `Mat3.Inverse`, `Mat3.ToQuaternion`
   - `Quaternion.Dot`, `Quaternion.Norm`/`Norm2`, `Quaternion.Normalize`, `Quaternion.Conjugate`, `Quaternion.Inverse`, `Quaternion.Mul`, `Quaternion.RotateVector`, `Quaternion.ToMat3`, `Quaternion.Slerp`
 
@@ -111,6 +120,12 @@
   - `AABBFromPoints`
   - `ClosestPointOnOBB`
   - `DistancePointToOBB`
+  - `ClosestPointOnCapsule`
+  - `DistancePointToCapsule`
+  - `ClosestPointsBetweenLines`
+  - `DistanceBetweenLines`
+  - `IntersectLinePlane`
+  - `IntersectPlanePlane`
   - `QuaternionFromAxisAngle` (constructor from raw scalar/vector input, like `RotationX`/`RotationY`/`RotationZ`)
 
 ## Notes toward v1.0.0 (historical)

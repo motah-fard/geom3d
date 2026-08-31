@@ -178,6 +178,56 @@ func ClosestPointsBetweenSegments(s1, s2 Segment3) (Vec3, Vec3) {
 	return c1, c2
 }
 
+// ClosestPointsBetweenLines returns the pair of closest points on infinite
+// lines l1 and l2.
+//
+// Unlike ClosestPointsBetweenSegments, neither line parameter is clamped,
+// since a Line3 extends in both directions.
+//
+// If either line is degenerate (zero direction), it falls back to treating
+// that line as a fixed point. If both are degenerate, it returns their
+// points.
+func ClosestPointsBetweenLines(l1, l2 Line3) (Vec3, Vec3) {
+	p1, d1 := l1.Point, l1.Dir
+	p2, d2 := l2.Point, l2.Dir
+
+	r := p1.Sub(p2)
+	a := d1.Dot(d1)
+	e := d2.Dot(d2)
+	f := d2.Dot(r)
+
+	// Both lines degenerate to points.
+	if AlmostZero(a) && AlmostZero(e) {
+		return p1, p2
+	}
+
+	// First line degenerates to a point.
+	if AlmostZero(a) {
+		return p1, p2.Add(d2.Scale(f / e))
+	}
+
+	c := d1.Dot(r)
+
+	// Second line degenerates to a point.
+	if AlmostZero(e) {
+		return p1.Add(d1.Scale(-c / a)), p2
+	}
+
+	b := d1.Dot(d2)
+	denom := a*e - b*b
+
+	var s float64
+	if !AlmostZero(denom) {
+		s = (b*f - c*e) / denom
+	} else {
+		// Parallel lines: any point works, so anchor on l1's own point.
+		s = 0
+	}
+	t := (b*s + f) / e
+
+	return p1.Add(d1.Scale(s)), p2.Add(d2.Scale(t))
+}
+
 // ClosestPointOnRay returns the closest point on ray r to point p.
 //
 // If the orthogonal projection of p onto the supporting line falls behind the
@@ -220,6 +270,48 @@ func ClosestPointOnSphere(p Vec3, s Sphere) Vec3 {
 	}
 
 	return s.Center.Add(d.Scale(s.Radius / n))
+}
+
+// ClosestPointOnCapsule returns the closest point on or in solid capsule c
+// to point p.
+//
+// If p lies inside the capsule, it returns p.
+//
+// If the capsule is invalid, it returns Vec3{}.
+func ClosestPointOnCapsule(p Vec3, c Capsule) Vec3 {
+	if !c.IsValid() {
+		return Vec3{}
+	}
+
+	cp := ClosestPointOnSegment(p, c.Segment())
+	d := p.Sub(cp)
+	n := d.Norm()
+	if n <= c.Radius {
+		return p
+	}
+
+	return cp.Add(d.Scale(c.Radius / n))
+}
+
+// ClosestPointOnOBB returns the closest point on or in solid box b to
+// point p.
+//
+// If p lies inside the box, it returns p.
+//
+// If the box is invalid, it returns Vec3{}.
+func ClosestPointOnOBB(p Vec3, b OBB) Vec3 {
+	if !b.IsValid() {
+		return Vec3{}
+	}
+
+	local := b.toLocal(p)
+	clamped := Vec3{
+		X: clamp(local.X, -b.HalfExtents.X, b.HalfExtents.X),
+		Y: clamp(local.Y, -b.HalfExtents.Y, b.HalfExtents.Y),
+		Z: clamp(local.Z, -b.HalfExtents.Z, b.HalfExtents.Z),
+	}
+
+	return b.toWorld(clamped)
 }
 
 // ClosestPointOnAABB returns the closest point on axis-aligned bounding box b

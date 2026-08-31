@@ -54,6 +54,13 @@ func DistanceBetweenSegments(s1, s2 Segment3) float64 {
 	return c1.Distance(c2)
 }
 
+// DistanceBetweenLines returns the Euclidean distance between infinite
+// lines l1 and l2.
+func DistanceBetweenLines(l1, l2 Line3) float64 {
+	c1, c2 := ClosestPointsBetweenLines(l1, l2)
+	return c1.Distance(c2)
+}
+
 // DistancePointToRay returns the Euclidean distance from point p to ray r.
 //
 // If the ray is invalid, it returns 0.
@@ -78,6 +85,21 @@ func DistancePointToSphere(p Vec3, s Sphere) float64 {
 	}
 
 	cp := ClosestPointOnSphere(p, s)
+	return p.Distance(cp)
+}
+
+// DistancePointToCapsule returns the Euclidean distance from point p to
+// solid capsule c.
+//
+// If p lies inside the capsule, it returns 0.
+//
+// If the capsule is invalid, it returns 0.
+func DistancePointToCapsule(p Vec3, c Capsule) float64 {
+	if !c.IsValid() {
+		return 0
+	}
+
+	cp := ClosestPointOnCapsule(p, c)
 	return p.Distance(cp)
 }
 

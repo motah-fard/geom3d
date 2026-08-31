@@ -560,6 +560,22 @@ func TestIntersectSegmentAABBHit(t *testing.T) {
 	}
 }
 
+func TestIntersectSegmentAABBEndsInsideBox(t *testing.T) {
+	b := AABB{Min: Vec3{0, 0, 0}, Max: Vec3{2, 2, 2}}
+	// The segment ends at x=1, which is inside the box, so the raw ray
+	// exit parameter (1.5) must be clamped down to the segment's own
+	// endpoint (t=1).
+	s := Segment3{A: Vec3{-1, 0.5, 0.5}, B: Vec3{1, 0.5, 0.5}}
+
+	hit, tMin, tMax := IntersectSegmentAABB(s, b)
+	if !hit {
+		t.Fatal("expected segment ending inside the box to intersect")
+	}
+	if !AlmostEqual(tMin, 0.5) || !AlmostEqual(tMax, 1) {
+		t.Fatalf("IntersectSegmentAABB: got tMin=%v, tMax=%v, want 0.5 and 1", tMin, tMax)
+	}
+}
+
 func TestIntersectSegmentAABBBeyondSegment(t *testing.T) {
 	b := AABB{Min: Vec3{5, 0, 0}, Max: Vec3{6, 1, 1}}
 	s := Segment3{A: Vec3{-1, 0.5, 0.5}, B: Vec3{1, 0.5, 0.5}}
@@ -602,6 +618,22 @@ func TestIntersectSegmentSphereHit(t *testing.T) {
 	// entered at x=-2 (t=0.3) and exited at x=2 (t=0.7).
 	if !AlmostEqual(tMin, 0.3) || !AlmostEqual(tMax, 0.7) {
 		t.Fatalf("IntersectSegmentSphere: got tMin=%v, tMax=%v, want 0.3 and 0.7", tMin, tMax)
+	}
+}
+
+func TestIntersectSegmentSphereEndsInsideSphere(t *testing.T) {
+	sph := Sphere{Center: Vec3{0, 0, 0}, Radius: 3}
+	// The segment ends at x=1, which is inside the sphere, so the raw ray
+	// exit parameter (4/3) must be clamped down to the segment's own
+	// endpoint (t=1).
+	s := Segment3{A: Vec3{-5, 0, 0}, B: Vec3{1, 0, 0}}
+
+	hit, tMin, tMax := IntersectSegmentSphere(s, sph)
+	if !hit {
+		t.Fatal("expected segment ending inside the sphere to intersect")
+	}
+	if !AlmostEqual(tMin, 1.0/3.0) || !AlmostEqual(tMax, 1) {
+		t.Fatalf("IntersectSegmentSphere: got tMin=%v, tMax=%v, want 1/3 and 1", tMin, tMax)
 	}
 }
 

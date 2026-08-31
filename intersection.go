@@ -29,6 +29,60 @@ func IntersectRayPlane(r Ray3, pl Plane) (Vec3, bool) {
 	return r.PointAt(t), true
 }
 
+// IntersectLinePlane computes the intersection point between infinite line
+// l and plane pl.
+//
+// Unlike IntersectRayPlane, the intersection parameter is not restricted to
+// t >= 0, since a Line3 extends in both directions.
+//
+// If the line is parallel to the plane or the plane is invalid, it returns
+// Vec3{} and false.
+func IntersectLinePlane(l Line3, pl Plane) (Vec3, bool) {
+	if !l.IsValid() || !pl.IsValid() {
+		return Vec3{}, false
+	}
+
+	n := pl.UnitNormal()
+	denom := l.Dir.Dot(n)
+
+	if AlmostZero(denom) {
+		return Vec3{}, false
+	}
+
+	t := pl.Point.Sub(l.Point).Dot(n) / denom
+	return l.PointAt(t), true
+}
+
+// IntersectPlanePlane computes the line of intersection between planes p1
+// and p2.
+//
+// It returns that line and true if the planes are not parallel. The
+// returned line's Dir is p1's normal crossed with p2's normal; it is not
+// normalized.
+//
+// If either plane is invalid, or the planes are parallel (including
+// coincident planes), it returns Line3{} and false.
+func IntersectPlanePlane(p1, p2 Plane) (Line3, bool) {
+	if !p1.IsValid() || !p2.IsValid() {
+		return Line3{}, false
+	}
+
+	n1 := p1.UnitNormal()
+	n2 := p2.UnitNormal()
+
+	dir := n1.Cross(n2)
+	denom := dir.Dot(dir)
+	if AlmostZero(denom) {
+		return Line3{}, false
+	}
+
+	d1 := n1.Dot(p1.Point)
+	d2 := n2.Dot(p2.Point)
+	point := n2.Scale(d1).Sub(n1.Scale(d2)).Cross(dir).Scale(1 / denom)
+
+	return Line3{Point: point, Dir: dir}, true
+}
+
 // IntersectSegmentPlane computes the intersection point between segment s and plane pl.
 //
 // It returns the intersection point and true if the segment intersects the plane

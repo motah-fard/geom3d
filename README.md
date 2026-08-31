@@ -23,6 +23,8 @@ The library is intentionally small, explicit, and easy to use.
   - `AABB`
   - `Sphere`
   - `OBB` (oriented bounding box)
+  - `Capsule`
+  - `Line3` (infinite line)
 - Core operations:
   - dot product
   - cross product
@@ -44,9 +46,12 @@ The library is intentionally small, explicit, and easy to use.
   - ray-AABB intersection with hit interval output (`hit`, `tMin`, `tMax`)
   - AABB-sphere and sphere-sphere intersection
   - AABB construction from a point set, union, margin expansion, volume, and surface area
+  - triangle-triangle overlap, including the coplanar case (partial overlap and full containment)
+  - plane-plane intersection (returns the line of intersection)
+  - line-plane intersection, and closest points/distance between two infinite lines
   - barycentric coordinates
-  - point-to-ray, point-to-segment, point-to-line, point-to-triangle, point-to-AABB, point-to-sphere, point-to-OBB, sphere-to-sphere, and segment-to-segment distance queries
-  - closest point on, and distance to, an oriented bounding box (`OBB`)
+  - point-to-ray, point-to-segment, point-to-line, point-to-triangle, point-to-AABB, point-to-sphere, point-to-OBB, point-to-capsule, sphere-to-sphere, segment-to-segment, and line-to-line distance queries
+  - closest point on, and distance to, an oriented bounding box (`OBB`) or a `Capsule`
 - 3D rotations with `Mat3`
   - matrix inverse and determinant, for the general (non-rotation) case
   - conversion to and from `Quaternion`
@@ -78,6 +83,8 @@ Typical use cases include:
 - computing barycentric coordinates for triangle-based workflows
 - representing and composing rotations with `Quaternion` for robotics/biomechanics workflows where gimbal lock or interpolation quality matters
 - testing a rotated bounding volume (`OBB`) against points, for tighter collision bounds than an `AABB`
+- modeling swept-sphere volumes (character capsules, cylindrical links) with `Capsule`
+- finding where two planes meet, or testing overlap between two triangles that may or may not be coplanar
 - applying and composing rigid transforms
 - working with coordinate frames in engineering or sensor-based applications
 
@@ -142,6 +149,8 @@ The package includes practical 3D primitives for common geometric workflows:
 - `AABB`
 - `Sphere`
 - `OBB`
+- `Capsule`
+- `Line3`
 
 ### Matrices, quaternions, and transforms
 `Mat3` supports 3D rotation matrices and matrix operations, including a general `Determinant`/`Inverse` (for the non-rotation case; use `Transpose` for rotation matrices) and conversion to/from `Quaternion`.  
@@ -159,15 +168,20 @@ The package includes helpers for:
 - point-to-AABB distance
 - point-to-sphere distance
 - point-to-OBB distance
+- point-to-capsule distance
 - sphere-to-sphere distance
 - segment-to-segment distance
+- line-to-line distance
 - point projection to planes and lines
 - barycentric coordinates
-- closest-point queries on rays, segments, triangles, AABBs, spheres, and OBBs
-- closest-point queries between segments
+- closest-point queries on rays, segments, triangles, AABBs, spheres, OBBs, and capsules
+- closest-point queries between segments, and between infinite lines
 - ray-plane intersection
 - ray-triangle intersection
 - ray-sphere intersection
+- line-plane intersection
+- plane-plane intersection
+- triangle-triangle overlap (coplanar and non-coplanar)
 - segment-plane intersection
 - segment-triangle intersection
 - segment-AABB intersection (bounded raycast)
@@ -232,6 +246,10 @@ have intentionally specific semantics worth calling out:
 - `Mat3.ToQuaternion` and `Quaternion.ToMat3` assume the value they're converting is a proper rotation (an orthonormal `Mat3`, or a `Quaternion` that is at least non-zero); passing an arbitrary matrix or a zero quaternion in does not produce a meaningful rotation out.
 - `Quaternion.ToMat3` returns `IdentityMat3()` (not `Mat3{}`) for the zero quaternion, because a zero matrix would silently collapse every point it's applied to onto the origin — a worse failure mode than "no rotation."
 - `OBB.Contains`, `ClosestPointOnOBB`, and `DistancePointToOBB` treat `OBB` as a solid box, mirroring `AABB`'s and `Sphere`'s conventions exactly (a point inside returns itself, at distance `0`).
+- `Capsule.Contains`, `ClosestPointOnCapsule`, and `DistancePointToCapsule` treat `Capsule` as a solid volume, the same way `Sphere` and `OBB` do.
+- `IntersectLinePlane` and `ClosestPointsBetweenLines`/`DistanceBetweenLines` are the unbounded-both-directions counterparts of `IntersectRayPlane` and `ClosestPointsBetweenSegments`/`DistanceBetweenSegments`; they exist because clamping to `t >= 0` or `t` in `[0, 1]` isn't always what you want. For a line given as two points rather than a `Line3`, `DistancePointToLine` and `ProjectPointToLine` remain the simpler choice.
+- `Triangle.Overlaps` handles coplanar triangles (partial overlap or full containment) via a 2D separating-axis test on the shared plane, since edges lying within a triangle's own plane are always reported as "parallel" (not intersecting) by `IntersectSegmentTriangle`. Non-coplanar overlap is detected by edge crossings instead.
+- `IntersectPlanePlane` returns `false` for **coincident** planes (the same plane specified two different ways), the same way `IntersectSegments` returns `false` for collinear overlap: the "intersection" isn't a single well-defined line, it's the entire plane.
 
 ## Examples
 
@@ -261,6 +279,9 @@ Runnable examples are included under the `examples/` directory, including:
 - `transform_point`
 - `quaternion_rotation`
 - `obb_closest_point`
+- `capsule_closest_point`
+- `plane_plane_intersection`
+- `triangle_overlap`
 
 ## API stability
 
