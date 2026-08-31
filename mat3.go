@@ -97,3 +97,86 @@ func (m Mat3) Transpose() Mat3 {
 		},
 	}
 }
+
+// Determinant returns the determinant of m.
+func (m Mat3) Determinant() float64 {
+	return m.M[0][0]*(m.M[1][1]*m.M[2][2]-m.M[1][2]*m.M[2][1]) -
+		m.M[0][1]*(m.M[1][0]*m.M[2][2]-m.M[1][2]*m.M[2][0]) +
+		m.M[0][2]*(m.M[1][0]*m.M[2][1]-m.M[1][1]*m.M[2][0])
+}
+
+// Inverse returns the inverse of m and true, for any m with a non-zero
+// determinant.
+//
+// For an orthonormal rotation matrix (such as one returned by RotationX,
+// RotationY, RotationZ, or Quaternion.ToMat3), Transpose is equivalent and
+// cheaper to compute; Inverse handles the general case.
+//
+// If m's determinant is zero (m is singular, and therefore has no inverse),
+// it returns Mat3{} and false. This is a property of the specific matrix
+// value, not invalid input.
+func (m Mat3) Inverse() (Mat3, bool) {
+	det := m.Determinant()
+	if AlmostZero(det) {
+		return Mat3{}, false
+	}
+	invDet := 1 / det
+
+	return Mat3{
+		M: [3][3]float64{
+			{
+				(m.M[1][1]*m.M[2][2] - m.M[1][2]*m.M[2][1]) * invDet,
+				(m.M[0][2]*m.M[2][1] - m.M[0][1]*m.M[2][2]) * invDet,
+				(m.M[0][1]*m.M[1][2] - m.M[0][2]*m.M[1][1]) * invDet,
+			},
+			{
+				(m.M[1][2]*m.M[2][0] - m.M[1][0]*m.M[2][2]) * invDet,
+				(m.M[0][0]*m.M[2][2] - m.M[0][2]*m.M[2][0]) * invDet,
+				(m.M[0][2]*m.M[1][0] - m.M[0][0]*m.M[1][2]) * invDet,
+			},
+			{
+				(m.M[1][0]*m.M[2][1] - m.M[1][1]*m.M[2][0]) * invDet,
+				(m.M[0][1]*m.M[2][0] - m.M[0][0]*m.M[2][1]) * invDet,
+				(m.M[0][0]*m.M[1][1] - m.M[0][1]*m.M[1][0]) * invDet,
+			},
+		},
+	}, true
+}
+
+// ToQuaternion returns the rotation quaternion equivalent to m.
+//
+// m is assumed to be a proper (orthonormal, right-handed) rotation matrix;
+// for any other matrix the result is not meaningful.
+func (m Mat3) ToQuaternion() Quaternion {
+	trace := m.M[0][0] + m.M[1][1] + m.M[2][2]
+
+	var q Quaternion
+	switch {
+	case trace > 0:
+		s := 0.5 / math.Sqrt(trace+1)
+		q.W = 0.25 / s
+		q.X = (m.M[2][1] - m.M[1][2]) * s
+		q.Y = (m.M[0][2] - m.M[2][0]) * s
+		q.Z = (m.M[1][0] - m.M[0][1]) * s
+	case m.M[0][0] > m.M[1][1] && m.M[0][0] > m.M[2][2]:
+		s := 2 * math.Sqrt(1+m.M[0][0]-m.M[1][1]-m.M[2][2])
+		q.W = (m.M[2][1] - m.M[1][2]) / s
+		q.X = 0.25 * s
+		q.Y = (m.M[0][1] + m.M[1][0]) / s
+		q.Z = (m.M[0][2] + m.M[2][0]) / s
+	case m.M[1][1] > m.M[2][2]:
+		s := 2 * math.Sqrt(1+m.M[1][1]-m.M[0][0]-m.M[2][2])
+		q.W = (m.M[0][2] - m.M[2][0]) / s
+		q.X = (m.M[0][1] + m.M[1][0]) / s
+		q.Y = 0.25 * s
+		q.Z = (m.M[1][2] + m.M[2][1]) / s
+	default:
+		s := 2 * math.Sqrt(1+m.M[2][2]-m.M[0][0]-m.M[1][1])
+		q.W = (m.M[1][0] - m.M[0][1]) / s
+		q.X = (m.M[0][2] + m.M[2][0]) / s
+		q.Y = (m.M[1][2] + m.M[2][1]) / s
+		q.Z = 0.25 * s
+	}
+
+	return q
+}

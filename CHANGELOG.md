@@ -19,6 +19,11 @@ All notable changes to this project will be documented in this file.
 - Added `IntersectAABBSphere`
 - Added `IntersectSegmentTriangle`, `IntersectSegmentAABB`, and `IntersectSegmentSphere` (bounded raycasts for finite segments, mirroring the existing `Ray3` intersection tests)
 - Added `examples/aabb_from_points`, `examples/segment_bounded_raycast`, and `examples/sphere_sphere`
+- Added `Mat3.Determinant` and `Mat3.Inverse` (general 3x3 inverse, for non-rotation matrices; `Transpose` remains the cheaper choice for rotations)
+- Added `Quaternion`: `IdentityQuaternion`, `QuaternionFromAxisAngle`, `IsValid`, `Dot`, `Norm`/`Norm2`, `Normalize`, `Conjugate`, `Inverse`, `Mul`, `RotateVector`, `ToMat3`, and `Slerp`
+- Added `Mat3.ToQuaternion`
+- Added `OBB` (oriented bounding box) with `IsValid`, `Volume`, `SurfaceArea`, and `Contains`, plus `ClosestPointOnOBB` and `DistancePointToOBB`
+- Added `examples/quaternion_rotation` and `examples/obb_closest_point`
 
 ### Improved
 - `IntersectRayTriangle` now shares its Möller–Trumbore implementation with the new `IntersectSegmentTriangle` via a private `intersectLineTriangle` helper, instead of each duplicating the algorithm

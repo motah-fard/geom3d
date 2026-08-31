@@ -22,6 +22,7 @@ The library is intentionally small, explicit, and easy to use.
   - `Triangle`
   - `AABB`
   - `Sphere`
+  - `OBB` (oriented bounding box)
 - Core operations:
   - dot product
   - cross product
@@ -44,8 +45,16 @@ The library is intentionally small, explicit, and easy to use.
   - AABB-sphere and sphere-sphere intersection
   - AABB construction from a point set, union, margin expansion, volume, and surface area
   - barycentric coordinates
-  - point-to-ray, point-to-segment, point-to-line, point-to-triangle, point-to-AABB, point-to-sphere, sphere-to-sphere, and segment-to-segment distance queries
+  - point-to-ray, point-to-segment, point-to-line, point-to-triangle, point-to-AABB, point-to-sphere, point-to-OBB, sphere-to-sphere, and segment-to-segment distance queries
+  - closest point on, and distance to, an oriented bounding box (`OBB`)
 - 3D rotations with `Mat3`
+  - matrix inverse and determinant, for the general (non-rotation) case
+  - conversion to and from `Quaternion`
+- `Quaternion` for rotation without gimbal lock
+  - construction from axis-angle
+  - composition, conjugate, inverse
+  - spherical linear interpolation (`Slerp`)
+  - rotating a `Vec3` directly, or converting to `Mat3` to rotate many points cheaply
 - Rigid transforms with `Transform`
   - apply to points and vectors
   - compose transforms
@@ -67,6 +76,8 @@ Typical use cases include:
 - building an AABB around a point cloud and testing it against other boxes or spheres
 - testing whether two segments intersect at a single point or overlap collinearly
 - computing barycentric coordinates for triangle-based workflows
+- representing and composing rotations with `Quaternion` for robotics/biomechanics workflows where gimbal lock or interpolation quality matters
+- testing a rotated bounding volume (`OBB`) against points, for tighter collision bounds than an `AABB`
 - applying and composing rigid transforms
 - working with coordinate frames in engineering or sensor-based applications
 
@@ -130,9 +141,11 @@ The package includes practical 3D primitives for common geometric workflows:
 - `Triangle`
 - `AABB`
 - `Sphere`
+- `OBB`
 
-### Matrices and transforms
-`Mat3` supports 3D rotation matrices and matrix operations.  
+### Matrices, quaternions, and transforms
+`Mat3` supports 3D rotation matrices and matrix operations, including a general `Determinant`/`Inverse` (for the non-rotation case; use `Transpose` for rotation matrices) and conversion to/from `Quaternion`.  
+`Quaternion` supports rotation without gimbal lock: construction from axis-angle, composition (`Mul`), `Conjugate`/`Inverse`, spherical interpolation (`Slerp`), and applying the rotation directly to a `Vec3` or converting to `Mat3`.  
 `Transform` supports rigid-body transforms for points and vectors, transform composition, and inversion.
 
 ### Geometric helpers
@@ -145,11 +158,12 @@ The package includes helpers for:
 - point-to-triangle distance
 - point-to-AABB distance
 - point-to-sphere distance
+- point-to-OBB distance
 - sphere-to-sphere distance
 - segment-to-segment distance
 - point projection to planes and lines
 - barycentric coordinates
-- closest-point queries on rays, segments, triangles, AABBs, and spheres
+- closest-point queries on rays, segments, triangles, AABBs, spheres, and OBBs
 - closest-point queries between segments
 - ray-plane intersection
 - ray-triangle intersection
@@ -214,6 +228,10 @@ have intentionally specific semantics worth calling out:
 - `AABBFromPoints` returns `AABB{}` for an empty slice, rather than a sentinel error — check `len(points) == 0` yourself first if that distinction matters to you.
 - `AABB.Union`, `AABB.ExpandToInclude`, and `AABB.Expand` compute their result component-wise without checking `IsValid()` first, matching `AABB.Overlaps`'s existing convention; feeding them an invalid box propagates that invalidity into the result rather than silently discarding it.
 - `Sphere.Overlaps` and `IntersectAABBSphere` treat touching shapes (distance exactly equal to the combined radius) as overlapping, matching `AABB.Overlaps`'s inclusive-boundary convention.
+- `Mat3.Inverse` returns `(Mat3{}, false)` when the matrix is singular (zero determinant). This is different from the rest of the library's "invalid input" convention: a singular matrix is a perfectly valid `Mat3` value that simply has no inverse, the same way `IntersectRayPlane` returning `false` means "no intersection for this valid input," not "your input was invalid."
+- `Mat3.ToQuaternion` and `Quaternion.ToMat3` assume the value they're converting is a proper rotation (an orthonormal `Mat3`, or a `Quaternion` that is at least non-zero); passing an arbitrary matrix or a zero quaternion in does not produce a meaningful rotation out.
+- `Quaternion.ToMat3` returns `IdentityMat3()` (not `Mat3{}`) for the zero quaternion, because a zero matrix would silently collapse every point it's applied to onto the origin — a worse failure mode than "no rotation."
+- `OBB.Contains`, `ClosestPointOnOBB`, and `DistancePointToOBB` treat `OBB` as a solid box, mirroring `AABB`'s and `Sphere`'s conventions exactly (a point inside returns itself, at distance `0`).
 
 ## Examples
 
@@ -241,6 +259,8 @@ Runnable examples are included under the `examples/` directory, including:
 - `triangle_closest_point`
 - `triangle_barycentric`
 - `transform_point`
+- `quaternion_rotation`
+- `obb_closest_point`
 
 ## API stability
 

@@ -96,6 +96,21 @@ func DistancePointToAABB(p Vec3, b AABB) float64 {
 	return p.Distance(cp)
 }
 
+// DistancePointToOBB returns the Euclidean distance from point p to solid
+// oriented bounding box b.
+//
+// If p lies inside the box, it returns 0.
+//
+// If the box is invalid, it returns 0.
+func DistancePointToOBB(p Vec3, b OBB) float64 {
+	if !b.IsValid() {
+		return 0
+	}
+
+	cp := ClosestPointOnOBB(p, b)
+	return p.Distance(cp)
+}
+
 // DistanceBetweenSpheres returns the Euclidean distance between the surfaces
 // of solid spheres s1 and s2.
 //

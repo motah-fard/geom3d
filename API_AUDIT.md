@@ -8,7 +8,9 @@
 - Triangle
 - AABB
 - Sphere
+- OBB
 - Mat3
+- Quaternion
 - Transform
 - Norm / Norm2
 - Length / Length2
@@ -51,6 +53,9 @@
 - AABBFromPoints, AABB.Union, AABB.ExpandToInclude, AABB.Expand, AABB.Volume, AABB.SurfaceArea
 - Sphere.Overlaps, DistanceBetweenSpheres, IntersectAABBSphere
 - IntersectSegmentTriangle, IntersectSegmentAABB, IntersectSegmentSphere
+- Mat3.Determinant, Mat3.Inverse, Mat3.ToQuaternion
+- Quaternion, IdentityQuaternion, QuaternionFromAxisAngle
+- OBB, ClosestPointOnOBB, DistancePointToOBB
 
 ## Review later
 - Whether additional projection helpers should be added to match `ProjectPointToLine`
@@ -69,6 +74,9 @@
   - `Plane.UnitNormal`
   - `AABB.Overlaps`, `AABB.Union`, `AABB.ExpandToInclude`, `AABB.Expand`, `AABB.Volume`, `AABB.SurfaceArea`
   - `Sphere.Overlaps`
+  - `OBB.IsValid`, `OBB.Volume`, `OBB.SurfaceArea`, `OBB.Contains`
+  - `Mat3.Determinant`, `Mat3.Inverse`, `Mat3.ToQuaternion`
+  - `Quaternion.Dot`, `Quaternion.Norm`/`Norm2`, `Quaternion.Normalize`, `Quaternion.Conjugate`, `Quaternion.Inverse`, `Quaternion.Mul`, `Quaternion.RotateVector`, `Quaternion.ToMat3`, `Quaternion.Slerp`
 
 - Keep geometric relations between different primitive types, and
   multi-object constructors, as free functions
@@ -101,6 +109,9 @@
   - `IntersectAABBSphere`
   - `SegmentsOverlap`
   - `AABBFromPoints`
+  - `ClosestPointOnOBB`
+  - `DistancePointToOBB`
+  - `QuaternionFromAxisAngle` (constructor from raw scalar/vector input, like `RotationX`/`RotationY`/`RotationZ`)
 
 ## Notes toward v1.0.0 (historical)
 The public API is now more coherent and practically useful than in early releases.
