@@ -113,6 +113,96 @@ func IntersectRayAABB(r Ray3, b AABB) (bool, float64, float64) {
 	return true, tMin, tMax
 }
 
+// IntersectRaySphere reports whether ray r intersects sphere s.
+//
+// It returns whether an intersection occurs, along with the near and far
+// ray parameters tMin and tMax. If the ray originates inside the sphere,
+// tMin is clamped to 0.
+//
+// If the ray or the sphere is invalid, or the sphere lies entirely behind
+// the ray origin, it returns false, 0, 0.
+func IntersectRaySphere(r Ray3, s Sphere) (bool, float64, float64) {
+	if !r.IsValid() || !s.IsValid() {
+		return false, 0, 0
+	}
+
+	oc := r.Origin.Sub(s.Center)
+	a := r.Dir.Dot(r.Dir)
+	b := 2 * oc.Dot(r.Dir)
+	c := oc.Dot(oc) - s.Radius*s.Radius
+
+	discriminant := b*b - 4*a*c
+	if discriminant < 0 {
+		return false, 0, 0
+	}
+
+	sqrtDisc := math.Sqrt(discriminant)
+	t1 := (-b - sqrtDisc) / (2 * a)
+	t2 := (-b + sqrtDisc) / (2 * a)
+
+	if t1 > t2 {
+		t1, t2 = t2, t1
+	}
+
+	if t2 < 0 {
+		return false, 0, 0
+	}
+
+	tMin := t1
+	if tMin < 0 {
+		tMin = 0
+	}
+
+	return true, tMin, t2
+}
+
+// IntersectRayTriangle computes the intersection point between ray r and
+// triangle tri using the Möller–Trumbore algorithm.
+//
+// It returns the intersection point and true if the ray intersects the
+// triangle at parameter t >= 0. Intersections are reported on either face of
+// the triangle; the test does not perform back-face culling.
+//
+// If the ray is invalid, the triangle is degenerate, the ray is parallel to
+// the triangle's plane, or the intersection lies outside the triangle or
+// behind the ray origin, it returns Vec3{} and false.
+func IntersectRayTriangle(r Ray3, tri Triangle) (Vec3, bool) {
+	if !r.IsValid() || tri.IsDegenerate() {
+		return Vec3{}, false
+	}
+
+	edge1 := tri.EdgeAB()
+	edge2 := tri.EdgeAC()
+
+	pvec := r.Dir.Cross(edge2)
+	det := edge1.Dot(pvec)
+
+	if AlmostZero(det) {
+		return Vec3{}, false
+	}
+
+	invDet := 1 / det
+	tvec := r.Origin.Sub(tri.A)
+
+	u := tvec.Dot(pvec) * invDet
+	if u < 0 || u > 1 {
+		return Vec3{}, false
+	}
+
+	qvec := tvec.Cross(edge1)
+	v := r.Dir.Dot(qvec) * invDet
+	if v < 0 || u+v > 1 {
+		return Vec3{}, false
+	}
+
+	t := edge2.Dot(qvec) * invDet
+	if t < 0 {
+		return Vec3{}, false
+	}
+
+	return r.PointAt(t), true
+}
+
 // IntersectSegments reports whether segments s1 and s2 intersect at a single point.
 //
 // If they intersect at a single point, it returns that point and true.

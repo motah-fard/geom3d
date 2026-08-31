@@ -100,14 +100,18 @@ func ClosestPointOnTriangle(p Vec3, t Triangle) Vec3 {
 	return a.Add(ab.Scale(v)).Add(ac.Scale(w))
 }
 
-func clamp01(x float64) float64 {
-	if x < 0 {
-		return 0
+func clamp(x, min, max float64) float64 {
+	if x < min {
+		return min
 	}
-	if x > 1 {
-		return 1
+	if x > max {
+		return max
 	}
 	return x
+}
+
+func clamp01(x float64) float64 {
+	return clamp(x, 0, 1)
 }
 
 // ClosestPointsBetweenSegments returns the pair of closest points on segments
@@ -198,6 +202,26 @@ func ClosestPointOnRay(p Vec3, r Ray3) Vec3 {
 	return r.PointAt(t)
 }
 
+// ClosestPointOnSphere returns the closest point on or in solid sphere s
+// to point p.
+//
+// If p lies inside the sphere, it returns p.
+//
+// If the sphere is invalid, it returns Vec3{}.
+func ClosestPointOnSphere(p Vec3, s Sphere) Vec3 {
+	if !s.IsValid() {
+		return Vec3{}
+	}
+
+	d := p.Sub(s.Center)
+	n := d.Norm()
+	if n <= s.Radius {
+		return p
+	}
+
+	return s.Center.Add(d.Scale(s.Radius / n))
+}
+
 // ClosestPointOnAABB returns the closest point on axis-aligned bounding box b
 // to point p.
 //
@@ -207,16 +231,6 @@ func ClosestPointOnRay(p Vec3, r Ray3) Vec3 {
 func ClosestPointOnAABB(p Vec3, b AABB) Vec3 {
 	if !b.IsValid() {
 		return Vec3{}
-	}
-
-	clamp := func(x, min, max float64) float64 {
-		if x < min {
-			return min
-		}
-		if x > max {
-			return max
-		}
-		return x
 	}
 
 	return Vec3{

@@ -64,6 +64,21 @@ func DistancePointToRay(p Vec3, r Ray3) float64 {
 	return p.Distance(cp)
 }
 
+// DistancePointToSphere returns the Euclidean distance from point p
+// to solid sphere s.
+//
+// If p lies inside the sphere, it returns 0.
+//
+// If the sphere is invalid, it returns 0.
+func DistancePointToSphere(p Vec3, s Sphere) float64 {
+	if !s.IsValid() {
+		return 0
+	}
+
+	cp := ClosestPointOnSphere(p, s)
+	return p.Distance(cp)
+}
+
 // DistancePointToAABB returns the Euclidean distance from point p
 // to axis-aligned bounding box b.
 //

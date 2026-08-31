@@ -7,6 +7,7 @@
 - Segment3
 - Triangle
 - AABB
+- Sphere
 - Mat3
 - Transform
 - Norm / Norm2
@@ -39,16 +40,25 @@
 - DistancePointToAABB
 - SegmentsOverlap
 
+## Added after v1.0.0
+- IntersectRayTriangle
+- Sphere
+- ClosestPointOnSphere
+- DistancePointToSphere
+- IntersectRaySphere
+- Vec3.Midpoint
+
 ## Review later
 - Whether additional projection helpers should be added to match `ProjectPointToLine`
-- Whether more closest-point helpers should be added for rays or line-line / segment-segment queries
+- Whether more closest-point helpers should be added for line-line queries
 - Whether future intersection helpers should return richer result types or tuples
-- Whether triangle-related helpers should expand further before `v1.0.0`
 - Whether overlapping collinear segment behavior should eventually have a richer relation helper
+- Whether invalid-input reporting (currently a documented zero-value fallback, see README's "Error handling" section) should become a `(value, bool)` return uniformly across all queries — this would require a `v2`, since it changes existing signatures
 
 ## Current API direction
 - Keep primitive object behavior as methods
   - `Vec3.Norm`
+  - `Vec3.Midpoint`
   - `Segment3.Length`
   - `Triangle.Area`
   - `Plane.UnitNormal`
@@ -60,6 +70,7 @@
   - `DistancePointToLine`
   - `DistancePointToTriangle`
   - `DistancePointToAABB`
+  - `DistancePointToSphere`
   - `DistanceBetweenSegments`
   - `ProjectPointToPlane`
   - `ProjectPointToLine`
@@ -68,17 +79,24 @@
   - `ClosestPointOnSegment`
   - `ClosestPointOnTriangle`
   - `ClosestPointOnAABB`
+  - `ClosestPointOnSphere`
   - `ClosestPointsBetweenSegments`
   - `IntersectRayPlane`
+  - `IntersectRayTriangle`
+  - `IntersectRaySphere`
   - `IntersectSegmentPlane`
   - `IntersectSegments`
   - `SegmentsOverlap`
 
-## Notes toward v1.0.0
+## Notes toward v1.0.0 (historical)
 The public API is now more coherent and practically useful than in early releases.
 
-Before `v1.0.0`, remaining review should focus on:
+Before `v1.0.0`, remaining review focused on:
 - any missing core geometry queries
 - whether current ray, triangle, segment, and AABB support is sufficient
 - whether any return shapes should be standardized further
 - whether any additional convenience helpers are essential enough to freeze into the public API
+
+`v1.0.0` shipped with that review complete. See "Review later" above for the
+current, ongoing list — anything added now is purely additive (see the
+README's "API stability" section).

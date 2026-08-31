@@ -273,6 +273,206 @@ func TestIntersectSegmentsOverlappingCollinear(t *testing.T) {
 	}
 }
 
+func TestIntersectRaySphereHit(t *testing.T) {
+	r := Ray3{
+		Origin: Vec3{-5, 0, 0},
+		Dir:    Vec3{1, 0, 0},
+	}
+	s := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+
+	hit, tMin, tMax := IntersectRaySphere(r, s)
+	if !hit {
+		t.Fatal("expected ray to intersect sphere")
+	}
+	if !AlmostEqual(tMin, 3) || !AlmostEqual(tMax, 7) {
+		t.Fatalf("IntersectRaySphere: got tMin=%v, tMax=%v, want 3 and 7", tMin, tMax)
+	}
+}
+
+func TestIntersectRaySphereMiss(t *testing.T) {
+	r := Ray3{
+		Origin: Vec3{-5, 5, 0},
+		Dir:    Vec3{1, 0, 0},
+	}
+	s := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+
+	hit, _, _ := IntersectRaySphere(r, s)
+	if hit {
+		t.Fatal("expected ray to miss sphere")
+	}
+}
+
+func TestIntersectRaySphereStartsInside(t *testing.T) {
+	r := Ray3{
+		Origin: Vec3{0, 0, 0},
+		Dir:    Vec3{1, 0, 0},
+	}
+	s := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+
+	hit, tMin, tMax := IntersectRaySphere(r, s)
+	if !hit {
+		t.Fatal("expected ray starting inside sphere to intersect")
+	}
+	if !AlmostEqual(tMin, 0) {
+		t.Fatalf("expected tMin = 0 for ray starting inside sphere, got %v", tMin)
+	}
+	if !AlmostEqual(tMax, 2) {
+		t.Fatalf("expected tMax = 2, got %v", tMax)
+	}
+}
+
+func TestIntersectRaySphereBehindOrigin(t *testing.T) {
+	r := Ray3{
+		Origin: Vec3{5, 0, 0},
+		Dir:    Vec3{1, 0, 0},
+	}
+	s := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+
+	hit, _, _ := IntersectRaySphere(r, s)
+	if hit {
+		t.Fatal("expected no intersection when sphere is behind ray origin")
+	}
+}
+
+func TestIntersectRaySphereInvalid(t *testing.T) {
+	r := Ray3{Origin: Vec3{-5, 0, 0}, Dir: Vec3{0, 0, 0}}
+	s := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+
+	hit, _, _ := IntersectRaySphere(r, s)
+	if hit {
+		t.Fatal("expected no intersection for invalid ray")
+	}
+
+	r2 := Ray3{Origin: Vec3{-5, 0, 0}, Dir: Vec3{1, 0, 0}}
+	badSphere := Sphere{Center: Vec3{0, 0, 0}, Radius: -1}
+
+	hit2, _, _ := IntersectRaySphere(r2, badSphere)
+	if hit2 {
+		t.Fatal("expected no intersection for invalid sphere")
+	}
+}
+
+func ExampleIntersectRaySphere() {
+	r := Ray3{
+		Origin: Vec3{X: -5, Y: 0, Z: 0},
+		Dir:    Vec3{X: 1, Y: 0, Z: 0},
+	}
+	s := Sphere{Center: Vec3{X: 0, Y: 0, Z: 0}, Radius: 2}
+
+	hit, tMin, tMax := IntersectRaySphere(r, s)
+	fmt.Println(hit, tMin, tMax)
+
+	// Output:
+	// true 3 7
+}
+
+func TestIntersectRayTriangleHit(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+		C: Vec3{0, 4, 0},
+	}
+	r := Ray3{
+		Origin: Vec3{1, 1, 5},
+		Dir:    Vec3{0, 0, -1},
+	}
+
+	got, ok := IntersectRayTriangle(r, tri)
+	want := Vec3{1, 1, 0}
+
+	if !ok {
+		t.Fatal("expected ray-triangle intersection")
+	}
+	if got != want {
+		t.Fatalf("IntersectRayTriangle: got %#v, want %#v", got, want)
+	}
+}
+
+func TestIntersectRayTriangleBackFace(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+		C: Vec3{0, 4, 0},
+	}
+	r := Ray3{
+		Origin: Vec3{1, 1, -5},
+		Dir:    Vec3{0, 0, 1},
+	}
+
+	_, ok := IntersectRayTriangle(r, tri)
+	if !ok {
+		t.Fatal("expected back-face hit to be reported (no culling)")
+	}
+}
+
+func TestIntersectRayTriangleMissOutsideEdge(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+		C: Vec3{0, 4, 0},
+	}
+	r := Ray3{
+		Origin: Vec3{5, 5, 5},
+		Dir:    Vec3{0, 0, -1},
+	}
+
+	_, ok := IntersectRayTriangle(r, tri)
+	if ok {
+		t.Fatal("expected no intersection outside triangle bounds")
+	}
+}
+
+func TestIntersectRayTriangleParallel(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+		C: Vec3{0, 4, 0},
+	}
+	r := Ray3{
+		Origin: Vec3{1, 1, 5},
+		Dir:    Vec3{1, 0, 0},
+	}
+
+	_, ok := IntersectRayTriangle(r, tri)
+	if ok {
+		t.Fatal("expected no intersection for ray parallel to triangle plane")
+	}
+}
+
+func TestIntersectRayTriangleBehindOrigin(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{4, 0, 0},
+		C: Vec3{0, 4, 0},
+	}
+	r := Ray3{
+		Origin: Vec3{1, 1, -5},
+		Dir:    Vec3{0, 0, -1},
+	}
+
+	_, ok := IntersectRayTriangle(r, tri)
+	if ok {
+		t.Fatal("expected no intersection behind ray origin")
+	}
+}
+
+func TestIntersectRayTriangleDegenerate(t *testing.T) {
+	tri := Triangle{
+		A: Vec3{0, 0, 0},
+		B: Vec3{2, 0, 0},
+		C: Vec3{4, 0, 0},
+	}
+	r := Ray3{
+		Origin: Vec3{1, 1, 5},
+		Dir:    Vec3{0, 0, -1},
+	}
+
+	_, ok := IntersectRayTriangle(r, tri)
+	if ok {
+		t.Fatal("expected no intersection for degenerate triangle")
+	}
+}
+
 func ExampleIntersectSegmentPlane() {
 	s := Segment3{
 		A: Vec3{0, 0, 0},
@@ -358,6 +558,27 @@ func ExampleIntersectRayPlane_parallel() {
 	// false
 	// {0 0 0}
 }
+func ExampleIntersectRayTriangle() {
+	tri := Triangle{
+		A: Vec3{X: 0, Y: 0, Z: 0},
+		B: Vec3{X: 4, Y: 0, Z: 0},
+		C: Vec3{X: 0, Y: 4, Z: 0},
+	}
+
+	r := Ray3{
+		Origin: Vec3{X: 1, Y: 1, Z: 5},
+		Dir:    Vec3{X: 0, Y: 0, Z: -1},
+	}
+
+	p, ok := IntersectRayTriangle(r, tri)
+	fmt.Println(ok)
+	fmt.Println(p)
+
+	// Output:
+	// true
+	// {1 1 0}
+}
+
 func ExampleIntersectSegments() {
 	s1 := Segment3{
 		A: Vec3{X: 0, Y: 0, Z: 0},

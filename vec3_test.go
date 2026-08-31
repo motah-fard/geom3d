@@ -80,6 +80,17 @@ func TestVec3Distance(t *testing.T) {
 	}
 }
 
+func TestVec3Midpoint(t *testing.T) {
+	a := Vec3{0, 0, 0}
+	b := Vec3{4, 2, -2}
+	got := a.Midpoint(b)
+	want := Vec3{2, 1, -1}
+
+	if got != want {
+		t.Fatalf("Midpoint: got %#v, want %#v", got, want)
+	}
+}
+
 func TestVec3Normalize(t *testing.T) {
 	a := Vec3{3, 0, 4}
 	got := a.Normalize()

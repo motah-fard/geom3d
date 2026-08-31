@@ -23,11 +23,7 @@ func (s Segment3) Length() float64 {
 
 // Midpoint returns the midpoint of the segment.
 func (s Segment3) Midpoint() Vec3 {
-	return Vec3{
-		X: (s.A.X + s.B.X) / 2,
-		Y: (s.A.Y + s.B.Y) / 2,
-		Z: (s.A.Z + s.B.Z) / 2,
-	}
+	return s.A.Midpoint(s.B)
 }
 
 // IsDegenerate reports whether the segment length is effectively zero.

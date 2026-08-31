@@ -68,6 +68,11 @@ func (a Vec3) Distance(b Vec3) float64 {
 	return math.Sqrt(a.Distance2(b))
 }
 
+// Midpoint returns the point halfway between a and b.
+func (a Vec3) Midpoint(b Vec3) Vec3 {
+	return a.Add(b).Scale(0.5)
+}
+
 // Normalize returns a unit vector in the same direction as a.
 // If a is the zero vector, it returns Vec3{}.
 func (a Vec3) Normalize() Vec3 {

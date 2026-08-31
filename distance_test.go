@@ -425,6 +425,52 @@ func TestDistancePointToAABBInvalidBox(t *testing.T) {
 	}
 }
 
+func TestDistancePointToSphereOutside(t *testing.T) {
+	s := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+	p := Vec3{4, 0, 0}
+
+	got := DistancePointToSphere(p, s)
+	want := 2.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToSphere outside: got %v, want %v", got, want)
+	}
+}
+
+func TestDistancePointToSphereInside(t *testing.T) {
+	s := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+	p := Vec3{1, 0, 0}
+
+	got := DistancePointToSphere(p, s)
+	want := 0.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToSphere inside: got %v, want %v", got, want)
+	}
+}
+
+func TestDistancePointToSphereInvalid(t *testing.T) {
+	s := Sphere{Center: Vec3{0, 0, 0}, Radius: -1}
+	p := Vec3{1, 1, 1}
+
+	got := DistancePointToSphere(p, s)
+	want := 0.0
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistancePointToSphere invalid: got %v, want %v", got, want)
+	}
+}
+
+func ExampleDistancePointToSphere() {
+	s := Sphere{Center: Vec3{X: 0, Y: 0, Z: 0}, Radius: 2}
+	p := Vec3{X: 4, Y: 0, Z: 0}
+
+	fmt.Println(DistancePointToSphere(p, s))
+
+	// Output:
+	// 2
+}
+
 func ExampleDistancePointToPlane() {
 	pl := Plane{
 		Point:  Vec3{X: 0, Y: 0, Z: 0},

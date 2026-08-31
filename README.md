@@ -1,5 +1,6 @@
 # geom3d
 
+[![CI](https://github.com/motah-fard/geom3d/actions/workflows/ci.yml/badge.svg)](https://github.com/motah-fard/geom3d/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/motah-fard/geom3d.svg)](https://pkg.go.dev/github.com/motah-fard/geom3d)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/motah-fard/geom3d)](https://github.com/motah-fard/geom3d/releases)
@@ -20,21 +21,24 @@ The library is intentionally small, explicit, and easy to use.
   - `Plane`
   - `Triangle`
   - `AABB`
+  - `Sphere`
 - Core operations:
   - dot product
   - cross product
   - norm and normalization
   - distance calculations
   - projections onto planes and lines
-  - closest point on a ray, segment, triangle, and AABB
+  - closest point on a ray, segment, triangle, AABB, and sphere
   - closest points between segments
   - ray-plane intersection
+  - ray-triangle intersection
+  - ray-sphere intersection with hit interval output (`hit`, `tMin`, `tMax`)
   - segment-plane intersection
   - segment-segment intersection at a single point
   - collinear segment overlap detection
   - ray-AABB intersection with hit interval output (`hit`, `tMin`, `tMax`)
   - barycentric coordinates
-  - point-to-ray, point-to-segment, point-to-line, point-to-triangle, point-to-AABB, and segment-to-segment distance queries
+  - point-to-ray, point-to-segment, point-to-line, point-to-triangle, point-to-AABB, point-to-sphere, and segment-to-segment distance queries
 - 3D rotations with `Mat3`
 - Rigid transforms with `Transform`
   - apply to points and vectors
@@ -50,9 +54,9 @@ The Go ecosystem already has solid low-level math and graphics-oriented packages
 Typical use cases include:
 
 - projecting points onto planes or lines
-- finding the closest point on a ray, segment, triangle, or bounding box
+- finding the closest point on a ray, segment, triangle, bounding box, or sphere
 - computing closest points or minimum distance between segments
-- checking ray intersections with planes or bounding boxes
+- checking ray intersections with planes, triangles, bounding boxes, or spheres
 - testing whether two segments intersect at a single point or overlap collinearly
 - computing barycentric coordinates for triangle-based workflows
 - applying and composing rigid transforms
@@ -107,7 +111,7 @@ func main() {
 ## Package overview
 
 ### Vectors
-`Vec3` supports common 3D vector operations such as addition, subtraction, scaling, dot products, cross products, norms, distances, and normalization.
+`Vec3` supports common 3D vector operations such as addition, subtraction, scaling, dot products, cross products, norms, distances, midpoints, and normalization.
 
 ### Primitives
 The package includes practical 3D primitives for common geometric workflows:
@@ -117,6 +121,7 @@ The package includes practical 3D primitives for common geometric workflows:
 - `Plane`
 - `Triangle`
 - `AABB`
+- `Sphere`
 
 ### Matrices and transforms
 `Mat3` supports 3D rotation matrices and matrix operations.  
@@ -131,27 +136,65 @@ The package includes helpers for:
 - point-to-line distance
 - point-to-triangle distance
 - point-to-AABB distance
+- point-to-sphere distance
 - segment-to-segment distance
 - point projection to planes and lines
 - barycentric coordinates
-- closest-point queries on rays, segments, triangles, and AABBs
+- closest-point queries on rays, segments, triangles, AABBs, and spheres
 - closest-point queries between segments
 - ray-plane intersection
+- ray-triangle intersection
+- ray-sphere intersection
 - segment-plane intersection
 - segment-segment intersection
 - collinear segment overlap detection
 - ray-AABB intersection
 
+## Error handling
+
+`geom3d` does not use panics or the `error` type for invalid geometric input
+(an invalid `AABB`, a zero-length `Ray3` direction, a degenerate `Triangle`,
+a negative-radius `Sphere`, and so on). This is a deliberate choice, not an
+oversight:
+
+- Every primitive that can be invalid or degenerate exposes an `IsValid()`
+  and/or `IsDegenerate()` method (e.g. `Ray3.IsValid`, `AABB.IsValid`,
+  `Sphere.IsValid`, `Triangle.IsDegenerate`, `Segment3.IsDegenerate`).
+  Call these at your program's boundary if you need to reject bad input
+  explicitly, the same way you'd validate any external data.
+- Queries that can legitimately have **no answer** for valid input — "does
+  this ray hit this plane," "do these segments intersect" — report that
+  with a `bool` return, following Go's own comma-ok idiom
+  (`p, ok := IntersectRayPlane(r, pl)`). This is not error handling in the
+  `error`-type sense; a `false` here is an expected, meaningful result, not
+  a failure.
+- Queries that receive **invalid** input (rather than valid input with no
+  answer) return a documented zero-value fallback instead of panicking.
+  Every such function's GoDoc comment states exactly what it returns for
+  invalid or degenerate input — that comment is the authoritative contract,
+  not this README.
+- All types are plain value structs (no pointers, no `nil` in the public
+  API), so there is no possibility of a `nil` dereference from this package.
+
+Because `geom3d` is past `v1.0.0`, these return shapes are frozen: adding a
+`bool`/`error` to an existing function's signature would be a breaking
+change and won't happen within `v1`. If your use case needs to distinguish
+"invalid input" from "no result" more strictly than the zero-value fallback
+allows, check `IsValid()`/`IsDegenerate()` before calling.
+
 ## Behavior notes
 
-A few helpers have intentionally specific semantics:
+The general invalid-input contract is described above; a few helpers also
+have intentionally specific semantics worth calling out:
 
 - `IntersectSegments` reports only **single-point** intersections. If two segments overlap over a non-zero interval, it returns `false`.
 - `SegmentsOverlap` reports only **collinear overlap over a non-zero interval**. Endpoint-only touching does not count as overlap.
 - `IntersectRayAABB` returns `hit, tMin, tMax`. If the ray starts inside the box, `tMin` may be `0`.
+- `IntersectRayTriangle` does not perform back-face culling; a hit is reported regardless of which side of the triangle the ray approaches from.
+- `IntersectRaySphere` returns `hit, tMin, tMax`. If the ray starts inside the sphere, `tMin` is clamped to `0`.
+- `ClosestPointOnSphere` and `DistancePointToSphere` treat `Sphere` as a solid ball: a point inside the sphere returns itself (distance `0`), matching `ClosestPointOnAABB`'s behavior for points inside a box.
 - `ClosestPointOnRay` clamps to the ray origin when the orthogonal projection falls behind the origin.
 - `ClosestPointOnAABB` returns the input point itself when the point lies inside the box.
-- Helpers that receive invalid rays, invalid AABBs, or other degenerate inputs document their fallback behavior in GoDoc.
 
 ## Examples
 
@@ -159,6 +202,7 @@ Runnable examples are included under the `examples/` directory, including:
 
 - `basic_vectors`
 - `ray_plane`
+- `ray_triangle`
 - `ray_closest_point`
 - `ray_distance`
 - `plane_projection`
@@ -169,6 +213,8 @@ Runnable examples are included under the `examples/` directory, including:
 - `aabb_ray`
 - `aabb_closest_point`
 - `aabb_distance`
+- `sphere_closest_point`
+- `sphere_ray`
 - `triangle_normal`
 - `triangle_closest_point`
 - `triangle_barycentric`
@@ -176,9 +222,19 @@ Runnable examples are included under the `examples/` directory, including:
 
 ## API stability
 
-`geom3d` is approaching `v1.0.0`.
+`geom3d` has reached `v1.0.0`. Existing exported function and method
+signatures are frozen: they will not change in a breaking way within the
+`v1` line.
 
-The current focus is API stability, edge-case confidence, and documentation clarity. Remaining changes before `v1.0.0` should be small, deliberate, and centered on correctness rather than feature growth.
+New functionality (new primitives, new queries) is still added as minor
+releases (`v1.1.0`, `v1.2.0`, ...) under standard [semantic
+versioning](https://semver.org/), and is purely additive. A breaking change
+to an existing signature would require a `v2`.
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for
+development setup, coding conventions, and PR expectations.
 
 ## License
 

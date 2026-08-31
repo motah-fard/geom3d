@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+### Added
+- Added `IntersectRayTriangle` (Möller–Trumbore ray-triangle intersection)
+- Added `examples/ray_triangle`
+- Added `Sphere` primitive with `IsValid`, `IsDegenerate`, `SurfaceArea`, `Volume`, and `Contains`
+- Added `ClosestPointOnSphere`, `DistancePointToSphere`, and `IntersectRaySphere`
+- Added `examples/sphere_closest_point` and `examples/sphere_ray`
+- Added a GitHub Actions CI workflow running build, vet, gofmt, and race-enabled tests across Linux, macOS, and Windows
+- Added `CONTRIBUTING.md`, issue templates, and a pull request template
+- Added `Vec3.Midpoint`
+- Added a README "Error handling" section documenting the library's invalid-input contract
+
+### Improved
+- `Segment3.Midpoint` and `AABB.Center` now delegate to `Vec3.Midpoint` instead of duplicating the averaging logic
+- Removed a duplicate clamp implementation in `closest.go` (`ClosestPointOnAABB` now shares the same `clamp` helper as `clamp01`)
+- `SegmentsOverlap` now uses `math.Abs`/`math.Max`/`math.Min` instead of manual comparisons
+- Corrected the README and API_AUDIT.md, which still described the library as "approaching v1.0.0" after v1.0.0 had already shipped
+- CI now only runs the race detector on Linux and macOS, since `-race` requires cgo and a C compiler that isn't guaranteed to be preconfigured on the windows-latest runner
+
 ## [v0.5.0]
 ### Added
 - Added `ClosestPointOnRay`

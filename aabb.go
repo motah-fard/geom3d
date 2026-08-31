@@ -20,11 +20,7 @@ func (b AABB) Size() Vec3 {
 
 // Center returns the center point of the box.
 func (b AABB) Center() Vec3 {
-	return Vec3{
-		X: (b.Min.X + b.Max.X) / 2,
-		Y: (b.Min.Y + b.Max.Y) / 2,
-		Z: (b.Min.Z + b.Max.Z) / 2,
-	}
+	return b.Min.Midpoint(b.Max)
 }
 
 // Contains reports whether p lies inside or on the boundary of the box.

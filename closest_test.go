@@ -378,6 +378,64 @@ func TestClosestPointOnAABBInvalidBox(t *testing.T) {
 	}
 }
 
+func TestClosestPointOnSphereOutside(t *testing.T) {
+	s := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+	p := Vec3{4, 0, 0}
+
+	got := ClosestPointOnSphere(p, s)
+	want := Vec3{2, 0, 0}
+
+	if got != want {
+		t.Fatalf("ClosestPointOnSphere outside: got %#v, want %#v", got, want)
+	}
+}
+
+func TestClosestPointOnSphereInside(t *testing.T) {
+	s := Sphere{Center: Vec3{0, 0, 0}, Radius: 2}
+	p := Vec3{1, 0, 0}
+
+	got := ClosestPointOnSphere(p, s)
+	want := p
+
+	if got != want {
+		t.Fatalf("ClosestPointOnSphere inside: got %#v, want %#v", got, want)
+	}
+}
+
+func TestClosestPointOnSphereAtCenter(t *testing.T) {
+	s := Sphere{Center: Vec3{1, 2, 3}, Radius: 2}
+	p := s.Center
+
+	got := ClosestPointOnSphere(p, s)
+	want := p
+
+	if got != want {
+		t.Fatalf("ClosestPointOnSphere at center: got %#v, want %#v", got, want)
+	}
+}
+
+func TestClosestPointOnSphereInvalid(t *testing.T) {
+	s := Sphere{Center: Vec3{0, 0, 0}, Radius: -1}
+	p := Vec3{1, 1, 1}
+
+	got := ClosestPointOnSphere(p, s)
+	want := Vec3{}
+
+	if got != want {
+		t.Fatalf("ClosestPointOnSphere invalid: got %#v, want %#v", got, want)
+	}
+}
+
+func ExampleClosestPointOnSphere() {
+	s := Sphere{Center: Vec3{X: 0, Y: 0, Z: 0}, Radius: 2}
+	p := Vec3{X: 4, Y: 0, Z: 0}
+
+	fmt.Println(ClosestPointOnSphere(p, s))
+
+	// Output:
+	// {2 0 0}
+}
+
 func ExampleClosestPointOnSegment() {
 	seg := Segment3{
 		A: Vec3{X: 0, Y: 0, Z: 0},

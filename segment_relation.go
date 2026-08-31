@@ -1,5 +1,7 @@
 package geom3d
 
+import "math"
+
 // SegmentsOverlap reports whether s1 and s2 are collinear and overlap over a
 // non-zero interval.
 //
@@ -24,18 +26,9 @@ func SegmentsOverlap(s1, s2 Segment3) bool {
 	}
 
 	// Project onto the dominant axis to test 1D overlap length.
-	absX := d1.X
-	if absX < 0 {
-		absX = -absX
-	}
-	absY := d1.Y
-	if absY < 0 {
-		absY = -absY
-	}
-	absZ := d1.Z
-	if absZ < 0 {
-		absZ = -absZ
-	}
+	absX := math.Abs(d1.X)
+	absY := math.Abs(d1.Y)
+	absZ := math.Abs(d1.Z)
 
 	var a1, b1, a2, b2 float64
 	switch {
@@ -57,14 +50,8 @@ func SegmentsOverlap(s1, s2 Segment3) bool {
 		a2, b2 = b2, a2
 	}
 
-	left := a1
-	if a2 > left {
-		left = a2
-	}
-	right := b1
-	if b2 < right {
-		right = b2
-	}
+	left := math.Max(a1, a2)
+	right := math.Min(b1, b2)
 
 	// Require positive overlap length, not just a shared endpoint.
 	return right-left > Epsilon
