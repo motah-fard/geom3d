@@ -4,7 +4,6 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/motah-fard/geom3d.svg)](https://pkg.go.dev/github.com/motah-fard/geom3d)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/motah-fard/geom3d)](https://github.com/motah-fard/geom3d/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/motah-fard/geom3d)](https://goreportcard.com/report/github.com/motah-fard/geom3d)
 
 `geom3d` is a practical Go library for 3D geometry and spatial calculations.
 
