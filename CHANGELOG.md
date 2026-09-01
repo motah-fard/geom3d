@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [v1.1.1] - 2026-08-31
+### Removed
+- Removed the Go Report Card badge from README.md (docs-only change, no code or API changes)
+
 ## [v1.1.0] - 2026-08-31
 ### Added
 - Added `IntersectRayTriangle` (Möller–Trumbore ray-triangle intersection)
