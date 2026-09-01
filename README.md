@@ -90,6 +90,26 @@ Typical use cases include:
 - applying and composing rigid transforms
 - working with coordinate frames in engineering or sensor-based applications
 
+### Compared to other Go libraries
+
+[`go-gl/mathgl`](https://github.com/go-gl/mathgl) is the other well-known
+pure-Go 3D math package, and it's a good library — but it solves a
+different problem. It's GLM-inspired vector/matrix math aimed at graphics
+pipelines: statically-sized vectors and matrices, projection/perspective
+matrix construction, and generating basic primitives for rendering. It's
+the right choice if you're driving a graphics API and need that
+GLM-shaped API surface.
+
+`geom3d` doesn't compete with that; it targets a different, narrower
+question: given two geometric objects, what's their relationship
+(distance, closest point, do they intersect)? That's a smaller, more
+specialized problem area — this is a spatial-query and collision-geometry
+library, not a general vector-math or rendering-adjacent one. If you need
+`glClipPlane`-style graphics pipeline math, reach for `mathgl`. If you need
+"does this ray hit this capsule" or "closest point on this triangle,"
+that's what `geom3d` is for. The two are complementary rather than
+competing — nothing stops a project from using both.
+
 ## Non-goals
 
 `geom3d` is not:
@@ -330,7 +350,10 @@ to an existing signature would require a `v2`.
 ## Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for
-development setup, coding conventions, and PR expectations.
+development setup, coding conventions, and PR expectations; see
+[ROADMAP.md](ROADMAP.md) for what's likely to be worked on next (and what's
+deliberately out of scope). This project follows the
+[Contributor Covenant](CODE_OF_CONDUCT.md).
 
 ## License
 

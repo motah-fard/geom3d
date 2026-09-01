@@ -2,14 +2,16 @@
 
 Thanks for considering a contribution. `geom3d` is intentionally small and
 explicit, so the bar for changes is about correctness and consistency more
-than volume of code.
+than volume of code. Participation is governed by the
+[Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Before you start
 
 For anything beyond a small fix (a new primitive, a new query, a signature
 change), please open an issue first to discuss the approach. This avoids
 wasted work on a PR that doesn't fit the project's scope — see the
-[README's "Non-goals" section](README.md#non-goals) and
+[README's "Non-goals" section](README.md#non-goals), [ROADMAP.md](ROADMAP.md)
+for what's likely welcome vs. explicitly out of scope, and
 [API_AUDIT.md](API_AUDIT.md) for the current design direction.
 
 ## Development setup

@@ -38,6 +38,9 @@ All notable changes to this project will be documented in this file.
 - Added `fuzz_test.go` with fuzz targets for `Triangle.Overlaps` (symmetry), `Mat3.Inverse` (consistency with `Determinant`, and numerical accuracy for well-conditioned matrices), `Quaternion.Slerp` (no NaN/Inf for any valid input and any `t`), and `IntersectRayCapsule` (entry/exit points always exactly on the capsule surface, cross-checked against `DistancePointToCapsule`) — each run clean for 10M+ generated cases with zero failures before being committed
 - Documented how to run both in `CONTRIBUTING.md`
 - Added `.golangci.yml` (standard linter set plus `unconvert`, `misspell`, `gocritic`, `unparam`) and a CI job that runs it
+- Added a README "Compared to other Go libraries" section (verified against `go-gl/mathgl`'s actual documented feature set rather than assumed)
+- Added `ROADMAP.md` (public "what's next / what's explicitly out of scope" list, derived from `API_AUDIT.md`'s internal backlog)
+- Added `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1)
 
 ### Improved
 - `unparam` caught that `intersectLineTriangle`'s second return value (the raw `t` parameter) was never used by either of its callers (`IntersectRayTriangle`, `IntersectSegmentTriangle` both discarded it) — removed it rather than suppressing the warning
