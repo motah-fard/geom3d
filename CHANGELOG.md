@@ -34,6 +34,9 @@ All notable changes to this project will be documented in this file.
 - Added `Capsule.Overlaps` and `DistanceBetweenCapsules`
 - Added `examples/ray_obb` and `examples/ray_capsule`
 - Added `RelativeEpsilon`, `AlmostEqualRelative`, and `AlmostZeroAtScale` for scale-aware tolerance comparisons at large coordinate magnitudes, where the fixed `Epsilon` breaks down; documented as tools for the caller's own use, not a change to any existing function's internal behavior
+- Added `benchmark_test.go` covering the package's hot paths (closest-point queries, ray/segment intersections, `Mat3`/`Quaternion` operations)
+- Added `fuzz_test.go` with fuzz targets for `Triangle.Overlaps` (symmetry), `Mat3.Inverse` (consistency with `Determinant`, and numerical accuracy for well-conditioned matrices), `Quaternion.Slerp` (no NaN/Inf for any valid input and any `t`), and `IntersectRayCapsule` (entry/exit points always exactly on the capsule surface, cross-checked against `DistancePointToCapsule`) — each run clean for 10M+ generated cases with zero failures before being committed
+- Documented how to run both in `CONTRIBUTING.md`
 
 ### Improved
 - `IntersectRayTriangle` now shares its Möller–Trumbore implementation with the new `IntersectSegmentTriangle` via a private `intersectLineTriangle` helper, instead of each duplicating the algorithm

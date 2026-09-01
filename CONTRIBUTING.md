@@ -66,6 +66,38 @@ macOS, and Windows for every PR.
 - If you add a new top-level query or primitive, consider adding a runnable
   program under `examples/`, matching the style of the existing examples.
 
+## Benchmarks
+
+`benchmark_test.go` covers the package's hot paths (closest-point and
+intersection queries, matrix/quaternion operations). If you're optimizing
+one of these, compare before/after:
+
+```bash
+go test -bench=. -benchmem -run '^$' . | tee new.txt
+git stash && go test -bench=. -benchmem -run '^$' . | tee old.txt && git stash pop
+benchstat old.txt new.txt   # go install golang.org/x/perf/cmd/benchstat@latest
+```
+
+If you add a new query that's likely to run in a hot loop (e.g. anything
+called per-frame or per-object-pair in a broad-phase check), consider
+adding a benchmark for it alongside its tests.
+
+## Fuzz tests
+
+`fuzz_test.go` runs Go's native fuzzer against a few of the more
+algorithmically involved functions (`Triangle.Overlaps`, `Mat3.Inverse`,
+`Quaternion.Slerp`, `IntersectRayCapsule`), checking that they never panic
+and don't produce `NaN`/`Inf` from finite, non-degenerate input. Run
+locally with:
+
+```bash
+go test -fuzz=FuzzTriangleOverlaps -fuzztime=30s .
+```
+
+If you add a new function with non-trivial branching on floating-point
+comparisons (the kind of code where a fuzzer is likely to find a corner
+case a hand-written test wouldn't), consider adding a fuzz target for it.
+
 ## Commit messages
 
 This repo loosely follows [Conventional Commits](https://www.conventionalcommits.org/):
