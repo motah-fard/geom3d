@@ -151,6 +151,60 @@ func TestDistancePointToCapsule(t *testing.T) {
 	}
 }
 
+func TestCapsuleOverlaps(t *testing.T) {
+	// Two vertical capsules along Z, offset in X by 1.5. Each has radius 1,
+	// so their surfaces are 0.5 apart when their axes are 1.5 apart... but
+	// here the axes are parallel and 1.5 apart with combined radius 2, so
+	// they overlap.
+	c1 := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}
+	c2 := Capsule{A: Vec3{1.5, 0, 0}, B: Vec3{1.5, 0, 4}, Radius: 1}
+
+	if !c1.Overlaps(c2) {
+		t.Fatal("expected overlapping capsules")
+	}
+
+	c3 := Capsule{A: Vec3{10, 0, 0}, B: Vec3{10, 0, 4}, Radius: 1}
+	if c1.Overlaps(c3) {
+		t.Fatal("expected non-overlapping capsules")
+	}
+
+	bad := Capsule{Radius: -1}
+	if bad.Overlaps(c1) {
+		t.Fatal("expected Overlaps to be false for invalid capsule")
+	}
+}
+
+func TestCapsuleOverlapsTouching(t *testing.T) {
+	c1 := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}
+	c2 := Capsule{A: Vec3{2, 0, 0}, B: Vec3{2, 0, 4}, Radius: 1}
+
+	if !c1.Overlaps(c2) {
+		t.Fatal("expected touching capsules to count as overlapping")
+	}
+}
+
+func TestDistanceBetweenCapsules(t *testing.T) {
+	c1 := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}
+	c2 := Capsule{A: Vec3{5, 0, 0}, B: Vec3{5, 0, 4}, Radius: 1}
+
+	got := DistanceBetweenCapsules(c1, c2)
+	want := 3.0 // axes 5 apart, minus both radii
+
+	if !AlmostEqual(got, want) {
+		t.Fatalf("DistanceBetweenCapsules: got %v, want %v", got, want)
+	}
+
+	overlapping := Capsule{A: Vec3{1.5, 0, 0}, B: Vec3{1.5, 0, 4}, Radius: 1}
+	if got := DistanceBetweenCapsules(c1, overlapping); got != 0 {
+		t.Fatalf("DistanceBetweenCapsules overlapping: got %v, want 0", got)
+	}
+
+	bad := Capsule{Radius: -1}
+	if got := DistanceBetweenCapsules(c1, bad); got != 0 {
+		t.Fatalf("DistanceBetweenCapsules invalid: got %v, want 0", got)
+	}
+}
+
 func ExampleClosestPointOnCapsule() {
 	c := Capsule{A: Vec3{X: 0, Y: 0, Z: 0}, B: Vec3{X: 0, Y: 0, Z: 4}, Radius: 1}
 	p := Vec3{X: 3, Y: 0, Z: 2}

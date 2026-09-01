@@ -61,3 +61,16 @@ func (c Capsule) Contains(p Vec3) bool {
 	}
 	return DistancePointToSegment(p, c.Segment()) <= c.Radius
 }
+
+// Overlaps reports whether c and other intersect or touch.
+//
+// Two capsules (swept spheres) overlap exactly when the distance between
+// their core segments is at most the sum of their radii.
+//
+// If either capsule is invalid, it returns false.
+func (c Capsule) Overlaps(other Capsule) bool {
+	if !c.IsValid() || !other.IsValid() {
+		return false
+	}
+	return DistanceBetweenSegments(c.Segment(), other.Segment()) <= c.Radius+other.Radius
+}

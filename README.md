@@ -44,13 +44,14 @@ The library is intentionally small, explicit, and easy to use.
   - segment-segment intersection at a single point
   - collinear segment overlap detection
   - ray-AABB intersection with hit interval output (`hit`, `tMin`, `tMax`)
-  - AABB-sphere and sphere-sphere intersection
+  - ray-OBB and ray-capsule intersection with hit interval output
+  - AABB-sphere, sphere-sphere, and capsule-capsule intersection
   - AABB construction from a point set, union, margin expansion, volume, and surface area
   - triangle-triangle overlap, including the coplanar case (partial overlap and full containment)
   - plane-plane intersection (returns the line of intersection)
   - line-plane intersection, and closest points/distance between two infinite lines
   - barycentric coordinates
-  - point-to-ray, point-to-segment, point-to-line, point-to-triangle, point-to-AABB, point-to-sphere, point-to-OBB, point-to-capsule, sphere-to-sphere, segment-to-segment, and line-to-line distance queries
+  - point-to-ray, point-to-segment, point-to-line, point-to-triangle, point-to-AABB, point-to-sphere, point-to-OBB, point-to-capsule, sphere-to-sphere, capsule-to-capsule, segment-to-segment, and line-to-line distance queries
   - closest point on, and distance to, an oriented bounding box (`OBB`) or a `Capsule`
 - 3D rotations with `Mat3`
   - matrix inverse and determinant, for the general (non-rotation) case
@@ -84,6 +85,7 @@ Typical use cases include:
 - representing and composing rotations with `Quaternion` for robotics/biomechanics workflows where gimbal lock or interpolation quality matters
 - testing a rotated bounding volume (`OBB`) against points, for tighter collision bounds than an `AABB`
 - modeling swept-sphere volumes (character capsules, cylindrical links) with `Capsule`
+- raycasting against a rotated bounding volume (`OBB`) or a capsule, for hit-testing and picking
 - finding where two planes meet, or testing overlap between two triangles that may or may not be coplanar
 - applying and composing rigid transforms
 - working with coordinate frames in engineering or sensor-based applications
@@ -170,6 +172,7 @@ The package includes helpers for:
 - point-to-OBB distance
 - point-to-capsule distance
 - sphere-to-sphere distance
+- capsule-to-capsule distance
 - segment-to-segment distance
 - line-to-line distance
 - point projection to planes and lines
@@ -179,6 +182,8 @@ The package includes helpers for:
 - ray-plane intersection
 - ray-triangle intersection
 - ray-sphere intersection
+- ray-OBB intersection
+- ray-capsule intersection
 - line-plane intersection
 - plane-plane intersection
 - triangle-triangle overlap (coplanar and non-coplanar)
@@ -191,6 +196,7 @@ The package includes helpers for:
 - ray-AABB intersection
 - AABB-sphere intersection
 - sphere-sphere intersection
+- capsule-capsule overlap
 - `AABBFromPoints`, `AABB.Union`, `AABB.ExpandToInclude`, `AABB.Expand`, `AABB.Volume`, `AABB.SurfaceArea`
 
 ## Error handling
@@ -250,6 +256,8 @@ have intentionally specific semantics worth calling out:
 - `IntersectLinePlane` and `ClosestPointsBetweenLines`/`DistanceBetweenLines` are the unbounded-both-directions counterparts of `IntersectRayPlane` and `ClosestPointsBetweenSegments`/`DistanceBetweenSegments`; they exist because clamping to `t >= 0` or `t` in `[0, 1]` isn't always what you want. For a line given as two points rather than a `Line3`, `DistancePointToLine` and `ProjectPointToLine` remain the simpler choice.
 - `Triangle.Overlaps` handles coplanar triangles (partial overlap or full containment) via a 2D separating-axis test on the shared plane, since edges lying within a triangle's own plane are always reported as "parallel" (not intersecting) by `IntersectSegmentTriangle`. Non-coplanar overlap is detected by edge crossings instead.
 - `IntersectPlanePlane` returns `false` for **coincident** planes (the same plane specified two different ways), the same way `IntersectSegments` returns `false` for collinear overlap: the "intersection" isn't a single well-defined line, it's the entire plane.
+- `IntersectRayOBB` and `IntersectRayCapsule` return `hit, tMin, tMax` exactly like `IntersectRayAABB`/`IntersectRaySphere`, including the same "`tMin` clamped to `0` if the ray starts inside" convention.
+- `Capsule.Overlaps` and `DistanceBetweenCapsules` compare the distance between the two capsules' **core segments** against the sum of their radii — the same reasoning as `Sphere.Overlaps`, just with a segment instead of a point at the center.
 
 ## Examples
 
@@ -282,6 +290,8 @@ Runnable examples are included under the `examples/` directory, including:
 - `capsule_closest_point`
 - `plane_plane_intersection`
 - `triangle_overlap`
+- `ray_obb`
+- `ray_capsule`
 
 ## API stability
 

@@ -29,6 +29,10 @@ All notable changes to this project will be documented in this file.
 - Added `IntersectLinePlane`, `IntersectPlanePlane`, `ClosestPointsBetweenLines`, and `DistanceBetweenLines`
 - Added `Triangle.Overlaps`, including a 2D separating-axis test for the coplanar case (partial overlap or full containment), alongside the general non-coplanar edge-crossing test
 - Added `examples/capsule_closest_point`, `examples/plane_plane_intersection`, and `examples/triangle_overlap`
+- Added `IntersectRayOBB`, reusing `IntersectRayAABB` by transforming the ray into the OBB's local frame
+- Added `IntersectRayCapsule` (ray vs. the infinite cylinder along the capsule's axis, clipped to the two hemispherical end caps)
+- Added `Capsule.Overlaps` and `DistanceBetweenCapsules`
+- Added `examples/ray_obb` and `examples/ray_capsule`
 
 ### Improved
 - `IntersectRayTriangle` now shares its Möller–Trumbore implementation with the new `IntersectSegmentTriangle` via a private `intersectLineTriangle` helper, instead of each duplicating the algorithm
@@ -38,6 +42,8 @@ All notable changes to this project will be documented in this file.
 - Corrected the README and API_AUDIT.md, which still described the library as "approaching v1.0.0" after v1.0.0 had already shipped
 - CI now only runs the race detector on Linux and macOS, since `-race` requires cgo and a C compiler that isn't guaranteed to be preconfigured on the windows-latest runner
 - Moved `ClosestPointOnOBB` and `ClosestPointOnCapsule` into `closest.go`, and `DistancePointToCapsule` into `distance.go`, for consistency with every other `ClosestPointOnX`/`DistancePointToX` free function living in those two files rather than the primitive's own file
+- `IntersectRaySphere` now shares its quadratic-solving with the new `IntersectRayCapsule` via a private `intersectLineSphere` helper
+- Removed two provably-unreachable root-ordering swaps in `intersectLineSphere` and `IntersectRayCapsule`'s cylinder test (the quadratic's leading coefficient is always non-negative in both cases, so the roots are already ordered)
 
 ## [v0.5.0]
 ### Added

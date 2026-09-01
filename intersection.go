@@ -167,6 +167,30 @@ func IntersectRayAABB(r Ray3, b AABB) (bool, float64, float64) {
 	return true, tMin, tMax
 }
 
+// IntersectRayOBB reports whether ray r intersects oriented bounding box b.
+//
+// It returns whether an intersection occurs, along with the entry and exit
+// ray parameters tMin and tMax, exactly as IntersectRayAABB does. It works
+// by transforming the ray into b's local (axis-aligned) frame and reusing
+// IntersectRayAABB there — a rigid rotation and translation don't change
+// the ray's parameter t, so the resulting tMin/tMax are valid in world
+// space unchanged.
+//
+// If the ray is invalid or the box is invalid, it returns false, 0, 0.
+func IntersectRayOBB(r Ray3, b OBB) (bool, float64, float64) {
+	if !r.IsValid() || !b.IsValid() {
+		return false, 0, 0
+	}
+
+	localRay := Ray3{
+		Origin: b.toLocal(r.Origin),
+		Dir:    b.Orientation.Transpose().MulVec(r.Dir),
+	}
+	localBox := AABB{Min: b.HalfExtents.Scale(-1), Max: b.HalfExtents}
+
+	return IntersectRayAABB(localRay, localBox)
+}
+
 // IntersectRaySphere reports whether ray r intersects sphere s.
 //
 // It returns whether an intersection occurs, along with the near and far
@@ -180,34 +204,158 @@ func IntersectRaySphere(r Ray3, s Sphere) (bool, float64, float64) {
 		return false, 0, 0
 	}
 
-	oc := r.Origin.Sub(s.Center)
-	a := r.Dir.Dot(r.Dir)
-	b := 2 * oc.Dot(r.Dir)
-	c := oc.Dot(oc) - s.Radius*s.Radius
-
-	discriminant := b*b - 4*a*c
-	if discriminant < 0 {
+	t0, t1, ok := intersectLineSphere(r.Origin, r.Dir, s)
+	if !ok || t1 < 0 {
 		return false, 0, 0
 	}
 
-	sqrtDisc := math.Sqrt(discriminant)
-	t1 := (-b - sqrtDisc) / (2 * a)
-	t2 := (-b + sqrtDisc) / (2 * a)
-
-	if t1 > t2 {
-		t1, t2 = t2, t1
-	}
-
-	if t2 < 0 {
-		return false, 0, 0
-	}
-
-	tMin := t1
+	tMin := t0
 	if tMin < 0 {
 		tMin = 0
 	}
 
-	return true, tMin, t2
+	return true, tMin, t1
+}
+
+// intersectLineSphere solves the quadratic for where the parametric line
+// origin + t*dir meets sphere s, returning the two roots (t0 <= t1) and
+// whether a real intersection exists. Unlike IntersectRaySphere, it does
+// not restrict t to any range — callers are responsible for applying
+// ray/segment/capsule-specific bounds on top of the raw roots.
+//
+// dir must be non-zero (every caller already guarantees this via its own
+// IsValid check). Given that, the quadratic's leading coefficient
+// dir.Dot(dir) is always positive, so (-b-sqrtDisc)/(2a) is always <=
+// (-b+sqrtDisc)/(2a) — the roots come out pre-ordered with no swap needed.
+func intersectLineSphere(origin, dir Vec3, s Sphere) (t0, t1 float64, ok bool) {
+	oc := origin.Sub(s.Center)
+	a := dir.Dot(dir)
+	b := 2 * oc.Dot(dir)
+	c := oc.Dot(oc) - s.Radius*s.Radius
+
+	discriminant := b*b - 4*a*c
+	if discriminant < 0 {
+		return 0, 0, false
+	}
+
+	sqrtDisc := math.Sqrt(discriminant)
+	return (-b - sqrtDisc) / (2 * a), (-b + sqrtDisc) / (2 * a), true
+}
+
+// IntersectRayCapsule reports whether ray r intersects capsule c.
+//
+// It returns whether an intersection occurs, along with the entry and exit
+// ray parameters tMin and tMax, exactly as IntersectRaySphere does. If the
+// ray originates inside the capsule, tMin is clamped to 0.
+//
+// The capsule's boundary is treated as three pieces: the infinite cylinder
+// along its axis (valid only between the two end caps) and the two
+// hemispherical end caps (valid only beyond the cylinder's own range). For
+// each piece, a candidate crossing is kept only if it actually falls within
+// that piece's own valid region — a ray's raw intersection with, say, the
+// sphere at c.A only counts if the crossing point's projection onto the
+// capsule's axis falls at or before c.A, not somewhere the cylinder's
+// lateral surface would apply instead.
+//
+// If the ray or the capsule is invalid, or the capsule lies entirely
+// behind the ray origin, it returns false, 0, 0.
+func IntersectRayCapsule(r Ray3, c Capsule) (bool, float64, float64) {
+	if !r.IsValid() || !c.IsValid() {
+		return false, 0, 0
+	}
+
+	axis := c.B.Sub(c.A)
+	dd := axis.Dot(axis)
+
+	if AlmostZero(dd) {
+		// Degenerate capsule (A == B): equivalent to a plain sphere.
+		return IntersectRaySphere(r, Sphere{Center: c.A, Radius: c.Radius})
+	}
+
+	m := r.Origin.Sub(c.A)
+	n := r.Dir
+	nd := n.Dot(axis)
+	md := m.Dot(axis)
+
+	// axisParam returns the point at ray parameter t's projection onto the
+	// capsule's axis, in [0, 1] between c.A and c.B (extending outside that
+	// range beyond the caps).
+	axisParam := func(t float64) float64 {
+		return (md + t*nd) / dd
+	}
+
+	var haveEntry, haveExit bool
+	var entry, exit float64
+
+	considerEntry := func(t float64) {
+		if !haveEntry || t < entry {
+			entry, haveEntry = t, true
+		}
+	}
+	considerExit := func(t float64) {
+		if !haveExit || t > exit {
+			exit, haveExit = t, true
+		}
+	}
+
+	// The infinite cylinder along the capsule's axis, valid only where the
+	// axis projection lands between the two end caps.
+	//
+	// a = dd*nn - nd*nd is, by the Cauchy-Schwarz identity, equal to
+	// dd*nn*sin²θ where θ is the angle between the ray direction and the
+	// axis — always >= 0, and strictly > 0 once the !AlmostZero(a) guard
+	// below passes. So, exactly as in intersectLineSphere, the two roots
+	// come out pre-ordered (t0 <= t1) with no swap needed.
+	nn := n.Dot(n)
+	mn := m.Dot(n)
+	mm := m.Dot(m)
+
+	if a := dd*nn - nd*nd; !AlmostZero(a) {
+		bCoef := dd*mn - nd*md
+		cCoef := dd*mm - md*md - c.Radius*c.Radius*dd
+		disc := bCoef*bCoef - a*cCoef
+
+		if disc >= 0 {
+			sqrtDisc := math.Sqrt(disc)
+			t0 := (-bCoef - sqrtDisc) / a
+			t1 := (-bCoef + sqrtDisc) / a
+
+			if s := axisParam(t0); s >= 0 && s <= 1 {
+				considerEntry(t0)
+			}
+			if s := axisParam(t1); s >= 0 && s <= 1 {
+				considerExit(t1)
+			}
+		}
+	}
+
+	// The two hemispherical end caps, each valid only beyond its own end
+	// of the axis.
+	if t0, t1, ok := intersectLineSphere(r.Origin, r.Dir, Sphere{Center: c.A, Radius: c.Radius}); ok {
+		if axisParam(t0) <= 0 {
+			considerEntry(t0)
+		}
+		if axisParam(t1) <= 0 {
+			considerExit(t1)
+		}
+	}
+	if t0, t1, ok := intersectLineSphere(r.Origin, r.Dir, Sphere{Center: c.B, Radius: c.Radius}); ok {
+		if axisParam(t0) >= 1 {
+			considerEntry(t0)
+		}
+		if axisParam(t1) >= 1 {
+			considerExit(t1)
+		}
+	}
+
+	if !haveEntry || !haveExit || exit < 0 {
+		return false, 0, 0
+	}
+	if entry < 0 {
+		entry = 0
+	}
+
+	return true, entry, exit
 }
 
 // IntersectRayTriangle computes the intersection point between ray r and

@@ -61,14 +61,15 @@
 - Capsule, ClosestPointOnCapsule, DistancePointToCapsule
 - Line3, IntersectLinePlane, IntersectPlanePlane, ClosestPointsBetweenLines, DistanceBetweenLines
 - Triangle.Overlaps
+- IntersectRayOBB, IntersectRayCapsule
+- Capsule.Overlaps, DistanceBetweenCapsules
 
 ## Review later
 - Whether additional projection helpers should be added to match `ProjectPointToLine`
 - Whether future intersection helpers should return richer result types or tuples
 - Whether overlapping collinear segment behavior should eventually have a richer relation helper
 - Whether invalid-input reporting (currently a documented zero-value fallback, see README's "Error handling" section) should become a `(value, bool)` return uniformly across all queries — this would require a `v2`, since it changes existing signatures
-- Ray-OBB and ray-capsule intersection are natural follow-ups to `IntersectRayAABB`/`IntersectRaySphere` but aren't implemented yet
-- AABB-OBB, OBB-OBB, and capsule-capsule intersection/overlap tests aren't implemented yet
+- **AABB-OBB and OBB-OBB intersection are deliberately not implemented.** An exact test needs the full 15-axis separating-axis theorem (3 face-normal axes per box, plus all 9 pairwise cross products of their edge directions). The 6 face-normal axes alone are necessary but not sufficient — skipping the 9 cross-axis cases produces false positives in edge-on-edge configurations. Those 9 cases are also the most error-prone part of the standard reference algorithm to transcribe correctly without a way to check against a working reference implementation, so this was deferred rather than shipped as a subtly-incorrect "mostly working" test. A partial (6-axis-only) version could be added if clearly documented as conservative/approximate, but hasn't been.
 
 ## Current API direction
 - Keep primitive object behavior as methods, including same-type relations
@@ -81,7 +82,7 @@
   - `AABB.Overlaps`, `AABB.Union`, `AABB.ExpandToInclude`, `AABB.Expand`, `AABB.Volume`, `AABB.SurfaceArea`
   - `Sphere.Overlaps`
   - `OBB.IsValid`, `OBB.Volume`, `OBB.SurfaceArea`, `OBB.Contains`
-  - `Capsule.IsValid`, `Capsule.IsDegenerate`, `Capsule.Segment`, `Capsule.Volume`, `Capsule.SurfaceArea`, `Capsule.Contains`
+  - `Capsule.IsValid`, `Capsule.IsDegenerate`, `Capsule.Segment`, `Capsule.Volume`, `Capsule.SurfaceArea`, `Capsule.Contains`, `Capsule.Overlaps`
   - `Line3.PointAt`, `Line3.IsValid`
   - `Triangle.Overlaps`
   - `Mat3.Determinant`, `Mat3.Inverse`, `Mat3.ToQuaternion`
@@ -98,6 +99,7 @@
   - `DistancePointToSphere`
   - `DistanceBetweenSegments`
   - `DistanceBetweenSpheres`
+  - `DistanceBetweenCapsules`
   - `ProjectPointToPlane`
   - `ProjectPointToLine`
   - `BarycentricCoordinates`
@@ -116,6 +118,8 @@
   - `IntersectSegmentSphere`
   - `IntersectSegments`
   - `IntersectAABBSphere`
+  - `IntersectRayOBB`
+  - `IntersectRayCapsule`
   - `SegmentsOverlap`
   - `AABBFromPoints`
   - `ClosestPointOnOBB`

@@ -146,3 +146,18 @@ func DistanceBetweenSpheres(s1, s2 Sphere) float64 {
 
 	return math.Max(0, s1.Center.Distance(s2.Center)-s1.Radius-s2.Radius)
 }
+
+// DistanceBetweenCapsules returns the Euclidean distance between the
+// surfaces of solid capsules c1 and c2.
+//
+// If the capsules overlap or touch, it returns 0.
+//
+// If either capsule is invalid, it returns 0.
+func DistanceBetweenCapsules(c1, c2 Capsule) float64 {
+	if !c1.IsValid() || !c2.IsValid() {
+		return 0
+	}
+
+	d := DistanceBetweenSegments(c1.Segment(), c2.Segment())
+	return math.Max(0, d-c1.Radius-c2.Radius)
+}

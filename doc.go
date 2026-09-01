@@ -19,11 +19,13 @@
 //     queries, signed distance, segment-segment and line-line queries, ray
 //     queries, box queries, sphere queries, OBB queries, capsule queries,
 //     ray-plane intersection, ray-triangle intersection, ray-sphere
-//     intersection, line-plane intersection, plane-plane intersection,
-//     triangle-triangle overlap (coplanar and non-coplanar), segment-plane
-//     intersection, segment-triangle intersection, bounded segment-AABB and
-//     segment-sphere raycasts, ray-AABB intersection, AABB-sphere and
-//     sphere-sphere intersection, and AABB construction/union/expansion
+//     intersection, ray-OBB intersection, ray-capsule intersection,
+//     line-plane intersection, plane-plane intersection, triangle-triangle
+//     overlap (coplanar and non-coplanar), segment-plane intersection,
+//     segment-triangle intersection, bounded segment-AABB and
+//     segment-sphere raycasts, ray-AABB intersection, AABB-sphere,
+//     sphere-sphere, and capsule-capsule intersection, and AABB
+//     construction/union/expansion
 //   - Rotations: Mat3 (including general Determinant/Inverse) and
 //     Quaternion (axis-angle construction, composition, Slerp), with
 //     conversion between the two

@@ -2,6 +2,7 @@ package geom3d
 
 import (
 	"fmt"
+	"math"
 	"testing"
 )
 
@@ -183,6 +184,91 @@ func TestIntersectRayAABBParallelOutside(t *testing.T) {
 		t.Fatal("expected parallel ray outside slab to miss AABB")
 	}
 }
+
+func TestIntersectRayOBBAxisAlignedMatchesAABB(t *testing.T) {
+	// With an identity orientation, IntersectRayOBB must agree exactly
+	// with IntersectRayAABB on an equivalent box.
+	r := Ray3{Origin: Vec3{-1, 0.5, 0.5}, Dir: Vec3{1, 0, 0}}
+	box := OBB{
+		Center:      Vec3{0.5, 0.5, 0.5},
+		HalfExtents: Vec3{0.5, 0.5, 0.5},
+		Orientation: IdentityMat3(),
+	}
+
+	hit, tMin, tMax := IntersectRayOBB(r, box)
+	if !hit {
+		t.Fatal("expected ray to intersect axis-aligned OBB")
+	}
+	if !AlmostEqual(tMin, 1) || !AlmostEqual(tMax, 2) {
+		t.Fatalf("IntersectRayOBB: got tMin=%v, tMax=%v, want 1 and 2", tMin, tMax)
+	}
+}
+
+func TestIntersectRayOBBRotatedHit(t *testing.T) {
+	// A box with non-uniform extents, rotated 90 degrees about Z: its
+	// local X axis (half-extent 2) now points along world Y, and its
+	// local Y axis (half-extent 1) now points along world X. A ray along
+	// world X should therefore see a world-X half-extent of 1, entering
+	// at x=-1 (t=4) and exiting at x=1 (t=6).
+	box := OBB{
+		Center:      Vec3{0, 0, 0},
+		HalfExtents: Vec3{2, 1, 1},
+		Orientation: RotationZ(math.Pi / 2),
+	}
+	r := Ray3{Origin: Vec3{-5, 0, 0}, Dir: Vec3{1, 0, 0}}
+
+	hit, tMin, tMax := IntersectRayOBB(r, box)
+	if !hit {
+		t.Fatal("expected ray to intersect rotated OBB")
+	}
+	if !AlmostEqual(tMin, 4) || !AlmostEqual(tMax, 6) {
+		t.Fatalf("IntersectRayOBB rotated: got tMin=%v, tMax=%v, want 4 and 6", tMin, tMax)
+	}
+}
+
+func TestIntersectRayOBBMiss(t *testing.T) {
+	box := OBB{
+		Center:      Vec3{0, 0, 0},
+		HalfExtents: Vec3{1, 1, 1},
+		Orientation: IdentityMat3(),
+	}
+	r := Ray3{Origin: Vec3{-5, 10, 0.5}, Dir: Vec3{1, 0, 0}}
+
+	hit, _, _ := IntersectRayOBB(r, box)
+	if hit {
+		t.Fatal("expected ray to miss OBB")
+	}
+}
+
+func TestIntersectRayOBBInvalid(t *testing.T) {
+	box := OBB{HalfExtents: Vec3{1, 1, 1}, Orientation: IdentityMat3()}
+	badRay := Ray3{Origin: Vec3{-5, 0, 0}, Dir: Vec3{0, 0, 0}}
+	if hit, _, _ := IntersectRayOBB(badRay, box); hit {
+		t.Fatal("expected no intersection for invalid ray")
+	}
+
+	r := Ray3{Origin: Vec3{-5, 0, 0}, Dir: Vec3{1, 0, 0}}
+	badBox := OBB{HalfExtents: Vec3{-1, 1, 1}, Orientation: IdentityMat3()}
+	if hit, _, _ := IntersectRayOBB(r, badBox); hit {
+		t.Fatal("expected no intersection for invalid OBB")
+	}
+}
+
+func ExampleIntersectRayOBB() {
+	box := OBB{
+		Center:      Vec3{X: 0, Y: 0, Z: 0},
+		HalfExtents: Vec3{X: 2, Y: 1, Z: 1},
+		Orientation: RotationZ(math.Pi / 2),
+	}
+	r := Ray3{Origin: Vec3{X: -5, Y: 0, Z: 0}, Dir: Vec3{X: 1, Y: 0, Z: 0}}
+
+	hit, tMin, tMax := IntersectRayOBB(r, box)
+	fmt.Println(hit, tMin, tMax)
+
+	// Output:
+	// true 4 6
+}
+
 func TestIntersectSegmentsCrossing(t *testing.T) {
 	s1 := Segment3{
 		A: Vec3{0, 0, 0},
@@ -741,6 +827,169 @@ func ExampleIntersectSegmentSphere() {
 
 	// Output:
 	// true 0.3 0.7
+}
+
+func TestIntersectRayCapsuleThroughCylinderBody(t *testing.T) {
+	c := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}
+	r := Ray3{Origin: Vec3{-5, 0, 2}, Dir: Vec3{1, 0, 0}}
+
+	hit, tMin, tMax := IntersectRayCapsule(r, c)
+	if !hit {
+		t.Fatal("expected ray to intersect the capsule's cylindrical body")
+	}
+	if !AlmostEqual(tMin, 4) || !AlmostEqual(tMax, 6) {
+		t.Fatalf("IntersectRayCapsule: got tMin=%v, tMax=%v, want 4 and 6", tMin, tMax)
+	}
+}
+
+func TestIntersectRayCapsuleAlongAxisThroughBothCaps(t *testing.T) {
+	// A ray parallel to the capsule's axis, straight down through the
+	// center: it must enter through the top hemisphere (at z=5, since the
+	// cap sphere at B=(0,0,4) has radius 1) and exit through the bottom
+	// hemisphere (at z=-1). This exercises the degenerate "ray parallel to
+	// the cylinder axis" branch, where the cylinder quadratic's leading
+	// coefficient is zero and only the two cap spheres contribute.
+	c := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}
+	r := Ray3{Origin: Vec3{0, 0, 10}, Dir: Vec3{0, 0, -1}}
+
+	hit, tMin, tMax := IntersectRayCapsule(r, c)
+	if !hit {
+		t.Fatal("expected ray to intersect the capsule along its axis")
+	}
+	if !AlmostEqual(tMin, 5) || !AlmostEqual(tMax, 11) {
+		t.Fatalf("IntersectRayCapsule along axis: got tMin=%v, tMax=%v, want 5 and 11", tMin, tMax)
+	}
+}
+
+func TestIntersectRayCapsuleAlongAxisReversed(t *testing.T) {
+	// Same axis-aligned setup as the "through both caps" case above, but
+	// approaching from below: entry is now via the bottom cap (sphere A)
+	// and exit via the top cap (sphere B) — the mirror image of that
+	// test's entry-via-B/exit-via-A, exercising the other two candidate
+	// branches (sphere-A-as-entry, sphere-B-as-exit).
+	c := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}
+	r := Ray3{Origin: Vec3{0, 0, -10}, Dir: Vec3{0, 0, 1}}
+
+	hit, tMin, tMax := IntersectRayCapsule(r, c)
+	if !hit {
+		t.Fatal("expected ray to intersect the capsule along its axis")
+	}
+	if !AlmostEqual(tMin, 9) || !AlmostEqual(tMax, 15) {
+		t.Fatalf("IntersectRayCapsule along axis reversed: got tMin=%v, tMax=%v, want 9 and 15", tMin, tMax)
+	}
+}
+
+func TestIntersectRayCapsuleMiss(t *testing.T) {
+	c := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}
+	r := Ray3{Origin: Vec3{-5, 10, 2}, Dir: Vec3{1, 0, 0}}
+
+	hit, _, _ := IntersectRayCapsule(r, c)
+	if hit {
+		t.Fatal("expected ray to miss the capsule")
+	}
+}
+
+func TestIntersectRayCapsuleStartsInside(t *testing.T) {
+	c := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}
+	r := Ray3{Origin: Vec3{0, 0, 2}, Dir: Vec3{1, 0, 0}}
+
+	hit, tMin, tMax := IntersectRayCapsule(r, c)
+	if !hit {
+		t.Fatal("expected ray starting inside the capsule to intersect")
+	}
+	if !AlmostEqual(tMin, 0) {
+		t.Fatalf("expected tMin = 0 for ray starting inside capsule, got %v", tMin)
+	}
+	if !AlmostEqual(tMax, 1) {
+		t.Fatalf("expected tMax = 1, got %v", tMax)
+	}
+}
+
+func TestIntersectRayCapsuleParallelOutsideRadius(t *testing.T) {
+	// Parallel to the axis, but offset beyond the radius: even though the
+	// ray never diverges from the axis direction, it should never come
+	// within range of either cap sphere.
+	c := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}
+	r := Ray3{Origin: Vec3{3, 0, 10}, Dir: Vec3{0, 0, -1}}
+
+	hit, _, _ := IntersectRayCapsule(r, c)
+	if hit {
+		t.Fatal("expected parallel ray beyond the radius to miss")
+	}
+}
+
+func TestIntersectRayCapsuleDegenerateToSphere(t *testing.T) {
+	c := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 0}, Radius: 2}
+	r := Ray3{Origin: Vec3{-5, 0, 0}, Dir: Vec3{1, 0, 0}}
+
+	hit, tMin, tMax := IntersectRayCapsule(r, c)
+	wantHit, wantMin, wantMax := IntersectRaySphere(r, Sphere{Center: Vec3{0, 0, 0}, Radius: 2})
+
+	if hit != wantHit || !AlmostEqual(tMin, wantMin) || !AlmostEqual(tMax, wantMax) {
+		t.Fatalf("IntersectRayCapsule degenerate: got (%v,%v,%v), want (%v,%v,%v)", hit, tMin, tMax, wantHit, wantMin, wantMax)
+	}
+}
+
+func TestIntersectRayCapsuleConsistentWithDistancePointToCapsule(t *testing.T) {
+	// Cross-check against the independently implemented
+	// DistancePointToCapsule: at the reported entry and exit parameters,
+	// the ray should be exactly on the capsule's surface (distance ==
+	// radius), and strictly inside just past the entry point.
+	cases := []struct {
+		name string
+		c    Capsule
+		r    Ray3
+	}{
+		{"through cylinder body", Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}, Ray3{Origin: Vec3{-5, 0, 2}, Dir: Vec3{1, 0, 0}}},
+		{"along axis through caps", Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}, Ray3{Origin: Vec3{0, 0, 10}, Dir: Vec3{0, 0, -1}}},
+		{"diagonal approach", Capsule{A: Vec3{1, -2, 0}, B: Vec3{3, 2, 5}, Radius: 0.7}, Ray3{Origin: Vec3{-10, -2, 1}, Dir: Vec3{1, 0.15, 0.08}}},
+	}
+
+	for _, tc := range cases {
+		hit, tMin, tMax := IntersectRayCapsule(tc.r, tc.c)
+		if !hit {
+			t.Fatalf("%s: expected a hit", tc.name)
+		}
+
+		entryDist := DistancePointToCapsule(tc.r.PointAt(tMin), tc.c)
+		exitDist := DistancePointToCapsule(tc.r.PointAt(tMax), tc.c)
+		if !AlmostEqual(entryDist, 0) {
+			t.Fatalf("%s: entry point should be on the capsule surface, got distance %v", tc.name, entryDist)
+		}
+		if !AlmostEqual(exitDist, 0) {
+			t.Fatalf("%s: exit point should be on the capsule surface, got distance %v", tc.name, exitDist)
+		}
+
+		midT := (tMin + tMax) / 2
+		if got := DistancePointToCapsule(tc.r.PointAt(midT), tc.c); got != 0 {
+			t.Fatalf("%s: midpoint between entry and exit should be strictly inside the capsule, got distance %v", tc.name, got)
+		}
+	}
+}
+
+func TestIntersectRayCapsuleInvalid(t *testing.T) {
+	c := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: 1}
+	badRay := Ray3{Origin: Vec3{-5, 0, 2}, Dir: Vec3{0, 0, 0}}
+	if hit, _, _ := IntersectRayCapsule(badRay, c); hit {
+		t.Fatal("expected no intersection for invalid ray")
+	}
+
+	r := Ray3{Origin: Vec3{-5, 0, 2}, Dir: Vec3{1, 0, 0}}
+	badCapsule := Capsule{A: Vec3{0, 0, 0}, B: Vec3{0, 0, 4}, Radius: -1}
+	if hit, _, _ := IntersectRayCapsule(r, badCapsule); hit {
+		t.Fatal("expected no intersection for invalid capsule")
+	}
+}
+
+func ExampleIntersectRayCapsule() {
+	c := Capsule{A: Vec3{X: 0, Y: 0, Z: 0}, B: Vec3{X: 0, Y: 0, Z: 4}, Radius: 1}
+	r := Ray3{Origin: Vec3{X: -5, Y: 0, Z: 2}, Dir: Vec3{X: 1, Y: 0, Z: 0}}
+
+	hit, tMin, tMax := IntersectRayCapsule(r, c)
+	fmt.Println(hit, tMin, tMax)
+
+	// Output:
+	// true 4 6
 }
 
 func ExampleIntersectSegmentPlane() {
