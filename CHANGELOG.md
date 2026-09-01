@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file.
 - Added `IntersectRayCapsule` (ray vs. the infinite cylinder along the capsule's axis, clipped to the two hemispherical end caps)
 - Added `Capsule.Overlaps` and `DistanceBetweenCapsules`
 - Added `examples/ray_obb` and `examples/ray_capsule`
+- Added `RelativeEpsilon`, `AlmostEqualRelative`, and `AlmostZeroAtScale` for scale-aware tolerance comparisons at large coordinate magnitudes, where the fixed `Epsilon` breaks down; documented as tools for the caller's own use, not a change to any existing function's internal behavior
 
 ### Improved
 - `IntersectRayTriangle` now shares its Möller–Trumbore implementation with the new `IntersectSegmentTriangle` via a private `intersectLineTriangle` helper, instead of each duplicating the algorithm

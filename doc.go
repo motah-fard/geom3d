@@ -30,6 +30,10 @@
 //     Quaternion (axis-angle construction, composition, Slerp), with
 //     conversion between the two
 //   - Rigid transforms: Transform composition and inversion
+//   - Tolerance: AlmostZero/AlmostEqual (the fixed Epsilon used
+//     throughout the package) and AlmostEqualRelative/AlmostZeroAtScale
+//     (scale-aware comparisons for callers working at large coordinate
+//     magnitudes, where the fixed Epsilon breaks down)
 //
 // Non-goals:
 //   - Rendering or OpenGL helpers

@@ -63,12 +63,14 @@
 - Triangle.Overlaps
 - IntersectRayOBB, IntersectRayCapsule
 - Capsule.Overlaps, DistanceBetweenCapsules
+- RelativeEpsilon, AlmostEqualRelative, AlmostZeroAtScale
 
 ## Review later
 - Whether additional projection helpers should be added to match `ProjectPointToLine`
 - Whether future intersection helpers should return richer result types or tuples
 - Whether overlapping collinear segment behavior should eventually have a richer relation helper
 - Whether invalid-input reporting (currently a documented zero-value fallback, see README's "Error handling" section) should become a `(value, bool)` return uniformly across all queries — this would require a `v2`, since it changes existing signatures
+- Whether the package's own internal `IsValid`/`IsDegenerate` checks should become scale-aware (using something like `AlmostZeroAtScale`) rather than the fixed `Epsilon` — this would change the observable behavior of existing frozen functions at large coordinate magnitudes and needs a deliberate, `v2`-scoped decision, not a quiet change
 - **AABB-OBB and OBB-OBB intersection are deliberately not implemented.** An exact test needs the full 15-axis separating-axis theorem (3 face-normal axes per box, plus all 9 pairwise cross products of their edge directions). The 6 face-normal axes alone are necessary but not sufficient — skipping the 9 cross-axis cases produces false positives in edge-on-edge configurations. Those 9 cases are also the most error-prone part of the standard reference algorithm to transcribe correctly without a way to check against a working reference implementation, so this was deferred rather than shipped as a subtly-incorrect "mostly working" test. A partial (6-axis-only) version could be added if clearly documented as conservative/approximate, but hasn't been.
 
 ## Current API direction

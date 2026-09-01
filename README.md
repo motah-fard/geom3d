@@ -231,6 +231,28 @@ change and won't happen within `v1`. If your use case needs to distinguish
 "invalid input" from "no result" more strictly than the zero-value fallback
 allows, check `IsValid()`/`IsDegenerate()` before calling.
 
+## Numerical tolerance and large coordinates
+
+Every `IsValid`/`IsDegenerate` check, and every internal "are these two
+values equal" comparison, in this package is built on `AlmostZero`/
+`AlmostEqual`, which use a fixed absolute tolerance (`Epsilon = 1e-9`). That
+works well at "ordinary" coordinate magnitudes — roughly the range a scene
+described in meters, or a part described in millimeters, would use — but it
+breaks down at large ones: two values can agree to 12 significant figures
+and still differ by far more than `1e-9` in absolute terms once they're in
+the millions. If you're working at large coordinate magnitudes (e.g. a
+world-scale simulation, or GPS-derived coordinates), be aware that
+`geom3d`'s own degeneracy checks (a triangle that's technically non-zero
+area but numerically flat at that scale, for instance) use this fixed
+tolerance and won't automatically adapt.
+
+`AlmostEqualRelative` and `AlmostZeroAtScale` are provided for **your own**
+comparisons in this situation — for interpreting `geom3d`'s output, or for
+your own tolerance decisions — but they do not change how `geom3d`'s
+internal functions behave; that would be a silent behavior change to a
+frozen `v1` API. There is currently no scale-aware variant of the library's
+own internal checks; see `API_AUDIT.md`'s "Review later" section.
+
 ## Behavior notes
 
 The general invalid-input contract is described above; a few helpers also
@@ -257,6 +279,7 @@ have intentionally specific semantics worth calling out:
 - `Triangle.Overlaps` handles coplanar triangles (partial overlap or full containment) via a 2D separating-axis test on the shared plane, since edges lying within a triangle's own plane are always reported as "parallel" (not intersecting) by `IntersectSegmentTriangle`. Non-coplanar overlap is detected by edge crossings instead.
 - `IntersectPlanePlane` returns `false` for **coincident** planes (the same plane specified two different ways), the same way `IntersectSegments` returns `false` for collinear overlap: the "intersection" isn't a single well-defined line, it's the entire plane.
 - `IntersectRayOBB` and `IntersectRayCapsule` return `hit, tMin, tMax` exactly like `IntersectRayAABB`/`IntersectRaySphere`, including the same "`tMin` clamped to `0` if the ray starts inside" convention.
+- `AlmostEqualRelative` and `AlmostZeroAtScale` compare against a tolerance that scales with the magnitude of the values involved, unlike every other function in the package (which use the fixed `Epsilon`) — see "Numerical tolerance and large coordinates" above.
 - `Capsule.Overlaps` and `DistanceBetweenCapsules` compare the distance between the two capsules' **core segments** against the sum of their radii — the same reasoning as `Sphere.Overlaps`, just with a segment instead of a point at the center.
 
 ## Examples
