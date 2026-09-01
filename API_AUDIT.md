@@ -44,7 +44,7 @@
 - DistancePointToAABB
 - SegmentsOverlap
 
-## Added after v1.0.0
+## Added in v1.1.0
 - IntersectRayTriangle
 - Sphere
 - ClosestPointOnSphere

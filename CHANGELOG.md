@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [v1.1.0] - 2026-08-31
 ### Added
 - Added `IntersectRayTriangle` (Möller–Trumbore ray-triangle intersection)
 - Added `examples/ray_triangle`
@@ -41,6 +43,7 @@ All notable changes to this project will be documented in this file.
 - Added a README "Compared to other Go libraries" section (verified against `go-gl/mathgl`'s actual documented feature set rather than assumed)
 - Added `ROADMAP.md` (public "what's next / what's explicitly out of scope" list, derived from `API_AUDIT.md`'s internal backlog)
 - Added `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1)
+- Added `.github/dependabot.yml` to keep the CI workflow's GitHub Actions (`actions/checkout`, `actions/setup-go`, `golangci-lint-action`) patched automatically; the module itself has no dependencies to track
 
 ### Improved
 - `unparam` caught that `intersectLineTriangle`'s second return value (the raw `t` parameter) was never used by either of its callers (`IntersectRayTriangle`, `IntersectSegmentTriangle` both discarded it) — removed it rather than suppressing the warning
