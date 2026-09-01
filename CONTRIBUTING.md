@@ -33,10 +33,12 @@ gofmt -l .        # should print nothing
 go vet ./...
 go build ./...
 go test ./... -race -cover
+golangci-lint run ./...   # see https://golangci-lint.run/welcome/install/
 ```
 
-CI runs the same checks (build, vet, gofmt, race-enabled tests) on Linux,
-macOS, and Windows for every PR.
+CI runs the same checks (build, vet, gofmt, lint, race-enabled tests) on
+Linux, macOS, and Windows for every PR. `.golangci.yml` at the repo root
+holds the lint configuration.
 
 ## Code conventions
 

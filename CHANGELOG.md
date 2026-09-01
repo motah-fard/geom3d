@@ -37,8 +37,10 @@ All notable changes to this project will be documented in this file.
 - Added `benchmark_test.go` covering the package's hot paths (closest-point queries, ray/segment intersections, `Mat3`/`Quaternion` operations)
 - Added `fuzz_test.go` with fuzz targets for `Triangle.Overlaps` (symmetry), `Mat3.Inverse` (consistency with `Determinant`, and numerical accuracy for well-conditioned matrices), `Quaternion.Slerp` (no NaN/Inf for any valid input and any `t`), and `IntersectRayCapsule` (entry/exit points always exactly on the capsule surface, cross-checked against `DistancePointToCapsule`) — each run clean for 10M+ generated cases with zero failures before being committed
 - Documented how to run both in `CONTRIBUTING.md`
+- Added `.golangci.yml` (standard linter set plus `unconvert`, `misspell`, `gocritic`, `unparam`) and a CI job that runs it
 
 ### Improved
+- `unparam` caught that `intersectLineTriangle`'s second return value (the raw `t` parameter) was never used by either of its callers (`IntersectRayTriangle`, `IntersectSegmentTriangle` both discarded it) — removed it rather than suppressing the warning
 - `IntersectRayTriangle` now shares its Möller–Trumbore implementation with the new `IntersectSegmentTriangle` via a private `intersectLineTriangle` helper, instead of each duplicating the algorithm
 - `Segment3.Midpoint` and `AABB.Center` now delegate to `Vec3.Midpoint` instead of duplicating the averaging logic
 - Removed a duplicate clamp implementation in `closest.go` (`ClosestPointOnAABB` now shares the same `clamp` helper as `clamp01`)

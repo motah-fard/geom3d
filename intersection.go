@@ -373,8 +373,7 @@ func IntersectRayTriangle(r Ray3, tri Triangle) (Vec3, bool) {
 		return Vec3{}, false
 	}
 
-	p, _, ok := intersectLineTriangle(r.Origin, r.Dir, tri, math.Inf(1))
-	return p, ok
+	return intersectLineTriangle(r.Origin, r.Dir, tri, math.Inf(1))
 }
 
 // IntersectSegmentTriangle computes the intersection point between segment s
@@ -393,8 +392,7 @@ func IntersectSegmentTriangle(s Segment3, tri Triangle) (Vec3, bool) {
 		return Vec3{}, false
 	}
 
-	p, _, ok := intersectLineTriangle(s.A, s.Direction(), tri, 1)
-	return p, ok
+	return intersectLineTriangle(s.A, s.Direction(), tri, 1)
 }
 
 // intersectLineTriangle implements the Möller–Trumbore ray/triangle
@@ -402,7 +400,7 @@ func IntersectSegmentTriangle(s Segment3, tri Triangle) (Vec3, bool) {
 // hit with 0 <= t <= maxT. IntersectRayTriangle and IntersectSegmentTriangle
 // are thin wrappers around this shared implementation, differing only in
 // maxT (unbounded for a ray, 1 for a segment).
-func intersectLineTriangle(origin, dir Vec3, tri Triangle, maxT float64) (Vec3, float64, bool) {
+func intersectLineTriangle(origin, dir Vec3, tri Triangle, maxT float64) (Vec3, bool) {
 	edge1 := tri.EdgeAB()
 	edge2 := tri.EdgeAC()
 
@@ -410,7 +408,7 @@ func intersectLineTriangle(origin, dir Vec3, tri Triangle, maxT float64) (Vec3, 
 	det := edge1.Dot(pvec)
 
 	if AlmostZero(det) {
-		return Vec3{}, 0, false
+		return Vec3{}, false
 	}
 
 	invDet := 1 / det
@@ -418,21 +416,21 @@ func intersectLineTriangle(origin, dir Vec3, tri Triangle, maxT float64) (Vec3, 
 
 	u := tvec.Dot(pvec) * invDet
 	if u < 0 || u > 1 {
-		return Vec3{}, 0, false
+		return Vec3{}, false
 	}
 
 	qvec := tvec.Cross(edge1)
 	v := dir.Dot(qvec) * invDet
 	if v < 0 || u+v > 1 {
-		return Vec3{}, 0, false
+		return Vec3{}, false
 	}
 
 	t := edge2.Dot(qvec) * invDet
 	if t < 0 || t > maxT {
-		return Vec3{}, 0, false
+		return Vec3{}, false
 	}
 
-	return origin.Add(dir.Scale(t)), t, true
+	return origin.Add(dir.Scale(t)), true
 }
 
 // IntersectAABBSphere reports whether axis-aligned bounding box b and sphere
