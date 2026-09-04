@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [v1.1.2] - 2026-09-04
+### Changed
+- Repositioned the README and package doc comment around **computational
+  geometry** rather than "3D math and geometry utilities" — the library's
+  distinctive surface is geometric queries (intersections, distances,
+  closest points) between existing primitives, not vector/matrix math,
+  which established libraries like `go-gl/mathgl` already cover well
+- Added a "Try it live" link to [geom3d
+  Playground](https://geom-3d-playground.netlify.app), an interactive
+  companion site where six of this library's own queries run against it
+  through a small Go API and render the request/response next to a live
+  3D scene
+- Updated the GitHub repository description, homepage, and topics to
+  match the computational-geometry positioning and improve discoverability
+
 ## [v1.1.1] - 2026-08-31
 ### Removed
 - Removed the Go Report Card badge from README.md (docs-only change, no code or API changes)

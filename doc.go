@@ -1,5 +1,5 @@
-// Package geom3d provides practical 3D geometry and spatial math utilities
-// for Go.
+// Package geom3d provides computational geometry utilities for 3D
+// applications in Go.
 //
 // It includes vectors, planes, infinite lines, rays, segments, triangles,
 // axis-aligned and oriented bounding boxes, spheres, capsules, rotation

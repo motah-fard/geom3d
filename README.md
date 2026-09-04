@@ -5,11 +5,20 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/motah-fard/geom3d)](https://github.com/motah-fard/geom3d/releases)
 
-`geom3d` is a practical Go library for 3D geometry and spatial calculations.
-
-It provides a focused set of tools for working with 3D vectors, geometric primitives, projections, distances, intersections, and rigid transforms in Go. The package is designed for engineering, simulation, robotics-adjacent workflows, biomechanics, and spatial analytics.
+`geom3d` is a lightweight, engine-independent **computational geometry**
+library for Go: 3D primitives, intersection tests, distance queries,
+closest-point operations, projections, and rigid transforms for
+simulations, CAD, robotics, games, visualization, and spatial
+applications — without requiring a rendering or physics engine.
 
 The library is intentionally small, explicit, and easy to use.
+
+**[Try it live →](https://geom-3d-playground.netlify.app)** — geom3d
+Playground is an interactive companion site where several of these exact
+queries (point-to-plane projection, ray-plane intersection, closest point
+on a segment, segment-to-segment distance, ray-AABB intersection, closest
+point on an AABB) run against this library through a small Go API, with
+the request and response shown alongside the live 3D scene. [Source →](https://github.com/motah-fard/geom3d-Playground)
 
 ## Features
 
@@ -67,9 +76,16 @@ The library is intentionally small, explicit, and easy to use.
 
 ## Why this library exists
 
-The Go ecosystem already has solid low-level math and graphics-oriented packages, but there is still room for a small, practical geometry library focused on everyday 3D calculations.
+Go already has solid low-level vector/matrix math packages aimed at
+graphics pipelines (see "Compared to other Go libraries" below). `geom3d`
+isn't another one of those — it answers a different question: given two
+geometric objects, what's their relationship? Do they intersect? What's
+the closest point? How far apart are they?
 
-`geom3d` targets that middle layer: the kinds of operations developers often need in real applications, without requiring a rendering engine, graphics framework, or heavyweight geometry stack.
+That's the computational-geometry layer: the queries developers actually
+reach for once they already have points and vectors, without needing to
+assemble the algorithms themselves or pull in an entire game/physics
+engine just to get a ray-triangle test.
 
 Typical use cases include:
 
