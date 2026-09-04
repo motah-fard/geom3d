@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [v1.1.3] - 2026-09-04
+### Added
+- Added `BENCHMARKS.md` with real, reproducible benchmark numbers
+  comparing geom3d against `go-gl/mathgl` on the small set of operations
+  the two libraries genuinely share (`Vec3` arithmetic, `Mat3` multiply,
+  `Quaternion` ops) — including the one operation (`Mat3` multiply) where
+  mathgl measured faster, reported honestly rather than omitted
+- Added `benchmarks/vs-mathgl`, a separate Go module (to keep mathgl out
+  of the main module's dependency-free `go.mod`) containing the
+  comparison benchmarks themselves
+- Noted the `Mat3.Mul` performance gap found by the above in
+  `ROADMAP.md`, with the reason (nested-loop `[3][3]float64` vs a
+  flat-array hand-unrolled multiply) and why fixing it needs a `v2`
+
 ## [v1.1.2] - 2026-09-04
 ### Changed
 - Repositioned the README and package doc comment around **computational

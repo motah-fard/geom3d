@@ -125,6 +125,11 @@ library, not a general vector-math or rendering-adjacent one. If you need
 that's what `geom3d` is for. The two are complementary rather than
 competing — nothing stops a project from using both.
 
+On the handful of operations the two libraries do share (basic `Vec3`
+arithmetic, `Mat3` multiply, `Quaternion` operations), see
+[`BENCHMARKS.md`](BENCHMARKS.md) for real, reproducible numbers —
+including the one operation where mathgl measured faster.
+
 ## Non-goals
 
 `geom3d` is not:

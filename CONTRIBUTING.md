@@ -86,6 +86,13 @@ If you add a new query that's likely to run in a hot loop (e.g. anything
 called per-frame or per-object-pair in a broad-phase check), consider
 adding a benchmark for it alongside its tests.
 
+`benchmarks/vs-mathgl` is a separate module comparing geom3d against
+`go-gl/mathgl` on their small overlap of shared operations (basic vector
+math, `Mat3` multiply, `Quaternion` ops) — it's isolated in its own
+module specifically so mathgl never becomes a dependency of the main
+module. See [`BENCHMARKS.md`](BENCHMARKS.md) for results and how to run
+it.
+
 ## Fuzz tests
 
 `fuzz_test.go` runs Go's native fuzzer against a few of the more
