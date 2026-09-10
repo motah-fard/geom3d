@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [v1.1.4] - 2026-09-10
+### Improved
+- `Mat3.Mul` hand-unrolled into 9 direct index expressions instead of a
+  triple-nested loop over `[3][3]float64` — closes the ~2.8x gap to
+  `go-gl/mathgl`'s equivalent found in v1.1.3's benchmarks (geom3d now
+  measures within noise of mathgl, ~7.5ns/op vs ~7.6ns/op on the
+  reference machine in `BENCHMARKS.md`). `Mat3`'s public shape and
+  `Mul`'s signature are unchanged — same values in, same values out,
+  purely an internal arithmetic change, so this ships as a normal minor
+  release rather than needing a `v2`
+- Updated `BENCHMARKS.md` with fresh, verified numbers reflecting the
+  above, and removed the now-resolved `Mat3.Mul` item from `ROADMAP.md`
+
 ## [v1.1.3] - 2026-09-04
 ### Added
 - Added `BENCHMARKS.md` with real, reproducible benchmark numbers

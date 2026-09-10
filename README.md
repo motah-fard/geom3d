@@ -127,8 +127,7 @@ competing — nothing stops a project from using both.
 
 On the handful of operations the two libraries do share (basic `Vec3`
 arithmetic, `Mat3` multiply, `Quaternion` operations), see
-[`BENCHMARKS.md`](BENCHMARKS.md) for real, reproducible numbers —
-including the one operation where mathgl measured faster.
+[`BENCHMARKS.md`](BENCHMARKS.md) for real, reproducible numbers.
 
 ## Non-goals
 

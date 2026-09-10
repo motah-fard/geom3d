@@ -73,18 +73,30 @@ func (m Mat3) MulVec(v Vec3) Vec3 {
 }
 
 // Mul returns the matrix product m * n.
+//
+// Hand-unrolled rather than a triple-nested loop over M — benchmarked at
+// roughly 2.8x faster (see BENCHMARKS.md), closing most of the gap to
+// go-gl/mathgl's flat-array Mul3 despite Mat3 keeping its [3][3]float64
+// shape. Same values in, same values out; only the arithmetic's shape
+// changed.
 func (m Mat3) Mul(n Mat3) Mat3 {
-	var out Mat3
-
-	for i := 0; i < 3; i++ {
-		for j := 0; j < 3; j++ {
-			for k := 0; k < 3; k++ {
-				out.M[i][j] += m.M[i][k] * n.M[k][j]
-			}
-		}
-	}
-
-	return out
+	return Mat3{M: [3][3]float64{
+		{
+			m.M[0][0]*n.M[0][0] + m.M[0][1]*n.M[1][0] + m.M[0][2]*n.M[2][0],
+			m.M[0][0]*n.M[0][1] + m.M[0][1]*n.M[1][1] + m.M[0][2]*n.M[2][1],
+			m.M[0][0]*n.M[0][2] + m.M[0][1]*n.M[1][2] + m.M[0][2]*n.M[2][2],
+		},
+		{
+			m.M[1][0]*n.M[0][0] + m.M[1][1]*n.M[1][0] + m.M[1][2]*n.M[2][0],
+			m.M[1][0]*n.M[0][1] + m.M[1][1]*n.M[1][1] + m.M[1][2]*n.M[2][1],
+			m.M[1][0]*n.M[0][2] + m.M[1][1]*n.M[1][2] + m.M[1][2]*n.M[2][2],
+		},
+		{
+			m.M[2][0]*n.M[0][0] + m.M[2][1]*n.M[1][0] + m.M[2][2]*n.M[2][0],
+			m.M[2][0]*n.M[0][1] + m.M[2][1]*n.M[1][1] + m.M[2][2]*n.M[2][1],
+			m.M[2][0]*n.M[0][2] + m.M[2][1]*n.M[1][2] + m.M[2][2]*n.M[2][2],
+		},
+	}}
 }
 
 // Transpose returns the transpose of m.

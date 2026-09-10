@@ -30,16 +30,6 @@ These are scoped, don't require a `v2`, and would be welcome contributions:
 - Additional closest-point/distance pairs that don't exist yet: ray-to-ray,
   ray-to-segment, segment-to-triangle, segment-to-AABB. None of these are
   hard, they just haven't been asked for yet.
-- **`Mat3.Mul` is slower than it needs to be.** [`BENCHMARKS.md`](BENCHMARKS.md)
-  measured it at ~2.8x slower than mathgl's equivalent: geom3d stores
-  `Mat3` as `[3][3]float64` and multiplies with a triple-nested loop,
-  while mathgl uses a flat `[9]float64` with a hand-unrolled multiply.
-  Flattening `Mat3`'s internal storage and hand-unrolling `Mul` (and
-  likely `MulVec`) is purely an internal change — the public `Mat3.M
-  [3][3]float64` field would need to become a method-based accessor or
-  be dropped in favor of indexed access, which **would** be a breaking
-  change requiring a `v2`, so this needs a deliberate decision, not a
-  quiet PR.
 - JSON marshaling for the basic types (`Vec3`, `Sphere`, etc.), if there's
   real demand for it — not adding speculatively.
 
